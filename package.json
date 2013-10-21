@@ -1,0 +1,15 @@
+{
+    "name": "Boreas",
+    "version": "0.0.1",
+    "author": "Alexander Marenin",
+    "private": true,
+    "dependencies": {
+        "express": ">=3.2.x",
+        "jade": "0.35.x",
+        "mocha": "1.12.x",
+        "expect.js": ">=0.2.0",
+        "request": ">=2.27.x",
+        "async": ">=0.2.9",
+        "commander": "2.x.x"
+    }
+}

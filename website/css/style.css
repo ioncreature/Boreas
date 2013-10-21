@@ -1,0 +1,68 @@
+/**
+ * @author Marenin Alex
+ * October 2013
+ */
+
+html {
+    height: 100%;
+}
+
+body {
+    font-family: 'Droid Sans', sans-serif;
+    height: 100%;
+    background: transparent url(../img/bg.jpg) center center no-repeat;
+}
+
+#wrap {
+    min-height: 100%;
+    height: auto !important;
+    height: 100%;
+    margin: 0 auto -60px;
+    padding: 0 0 60px;
+}
+
+#header {
+    height: 100px;
+}
+
+#wrap .row.container {
+    margin: 0 auto;
+}
+
+.super-header {
+    font-size: 54px;
+    font-weight: bold;
+    margin-bottom: 10px;
+    padding: 4px 12px;
+    border-radius: 5px;
+    text-align: center;
+}
+
+.white-box {
+    background-color: rgba(30, 30, 30, 0.3);
+    -webkit-box-shadow: 0 1px 5px rgba(0, 0, 0, .2);
+       -moz-box-shadow: 0 1px 5px rgba(0, 0, 0, .2);
+            box-shadow: 0 1px 5px rgba(0, 0, 0, .2);
+}
+
+.form-container {
+    margin: 0 auto;
+    padding: 10px;
+    border-radius: 5px;
+    text-align: center;
+}
+
+.form-container button {
+    max-width: 300px;
+    width: 100%;
+}
+
+#footer {
+    height: 60px;
+    background-color: rgba(30, 30, 30, 0.3);
+    color: #d0d0d0;
+}
+
+#footer .container {
+    line-height: 60px;
+}
