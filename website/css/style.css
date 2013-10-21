@@ -52,11 +52,6 @@ body {
     text-align: center;
 }
 
-.form-container button {
-    max-width: 300px;
-    width: 100%;
-}
-
 #footer {
     height: 60px;
     background-color: rgba(30, 30, 30, 0.3);
@@ -65,4 +60,11 @@ body {
 
 #footer .container {
     line-height: 60px;
+}
+
+#video-container {
+    display: none;
+    position: relative;
+    height: 500px;
+    width: 100%;
 }

@@ -25,7 +25,6 @@
     </style>
     <link href='http://fonts.googleapis.com/css?family=Droid+Sans:400,700'  rel='stylesheet' type='text/css' />
     <link rel="stylesheet" href="css/bootstrap.css" />
-    <link rel="stylesheet" href="css/bootstrap-theme.css" />
     <link rel="stylesheet" href="css/style.css" />
     <script src="js/jquery-2.0.3.min.js"></script>
     <script src="js/socket.io.min.js"></script>
@@ -34,23 +33,20 @@
     <div id="wrap">
         <div id="header"></div>
         <div class="row container">
-            <!--<div class="col-sm-6">-->
-                <!--<p class="super-header white-box">Video chat</p>-->
-            <!--</div>-->
             <div class="col-sm-3"></div>
 
             <div class="col-sm-6">
                 <div class="white-box form-container">
-                    <button id="newRoom" class="btn btn-success btn-lg">New Room</button>
-                    <br />
-                    <br />
-                    <button id="joinRoom" class="btn btn-success btn-lg">Join Room</button>
+                    <button id="newRoom" class="btn btn-success btn-lg btn-block">New Room</button>
+                    <button id="joinRoom" class="btn btn-success btn-lg btn-block">Join Room</button>
                 </div>
             </div>
         </div>
-        <!--<audio id="remote-audio"></audio>-->
-        <!--<video id="remote-video"></video>-->
-        <!--<video id="local-video"></video>-->
+        <div id="video-container">
+            <audio id="remote-audio"></audio>
+            <video id="remote-video"></video>
+            <video id="local-video"></video>
+        </div>
     </div>
 
     <div id="footer">
@@ -59,6 +55,9 @@
 
     <script>
         $( function(){
+            var chat = new Chat({
+
+            });
             $( '#newRoom' ).click( function(){
 
             });
