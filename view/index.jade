@@ -1,0 +1,69 @@
+// @author Marenin Alex
+// October 2013
+
+!!! 5
+html
+    head
+        title Video Chat
+        style.
+            #remote-video {
+                position: absolute;
+                top: 0;
+                left: 0;
+                width: 100%;
+                height: 100%;
+                z-index: 1;
+            }
+
+            #local-video {
+                position: absolute;
+                bottom: 10px;
+                right: 10px;
+                width: 240px;
+                height: 160px;
+                z-index: 2;
+                border: 5px solid rgba(0, 0, 0, .5);
+                border-radius: 4px;
+                background-color: grey;
+            }
+        link(href='http://fonts.googleapis.com/css?family=Droid+Sans:400,700', rel='stylesheet', type='text/css')
+        link(rel='stylesheet', href='public/css/bootstrap.css')
+        link(rel='stylesheet', href='public/css/style.css')
+        script(src='public/js/jquery.min.js')
+        script(src='public/js/socket.io.min.js')
+    body
+        #wrap
+            #header
+            .row.container
+                .col-sm-3
+                .col-sm-6
+                    .white-box.form-container
+                        button#newRoom.btn.btn-success.btn-lg.btn-block New Room
+                        button#joinRoom.btn.btn-success.btn-lg.btn-block Join Room
+            #video-container
+                audio#remote-audio
+                video#remote-video
+                video#local-video
+        #footer
+            .container
+                | ©
+                a(href='https://github.com/ioncreature', target='_blank') Alexander Marenin
+        script.
+            $( function(){
+                var chat = new Chat({
+                    remoteVideo: document.getElementById('remote-video'),
+                    localVideo: document.getElementById('local-video'),
+                    remoteAudio: document.getElementById('remote-audio'),
+                    socketUrl: '#{socketUrl}'
+                });
+                chat.connect();
+
+                $( '#newRoom' ).click( function(){
+                    console.log( 'new room click' );
+                });
+                $( '#joinRoom' ).click( function(){
+                    console.log( 'join room click' );
+                });
+            });
+        script(src='public/js/bootstrap.min.js')
+        script(src='public/js/main.js')

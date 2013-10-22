@@ -8,6 +8,7 @@ function Chat( options ){
     this.remoteVideo = options.remoteVideo;
     this.localVideo = options.localVideo;
     this.socketUrl = options.socketUrl;
+    this.remoteAudio = options.remoteAudio;
     this.id = String( Date.now() + Math.random() );
 }
 
