@@ -37,7 +37,7 @@ app.use( app.router );
 server.listen( commander.port || config.port );
 
 
-// ROUTING
+// HTTP
 
 
 app.get( '/', function( req, res ){
@@ -45,3 +45,14 @@ app.get( '/', function( req, res ){
         socketUrl: config.socketUrl
     });
 });
+
+
+// SOCKET
+
+var rooms = {},
+    peers = {};
+
+io.on( 'createRoom', function( data, cb ){
+
+});
+

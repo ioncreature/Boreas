@@ -57,7 +57,7 @@ Room.prototype.joinRoom = function( options, callback ){
         else {
             room.roomName = res.roomName;
             room.addPeer( res.peers );
-            room.connectWithMembers();
+            room.connectWithPeers();
             callback( null, room );
         }
     });
@@ -65,22 +65,35 @@ Room.prototype.joinRoom = function( options, callback ){
 
 
 Room.prototype.createRoom = function( options, callback ){
-    var room = this;
-    this.io.emit( 'createRoom', {
-        roomName: options.roomName,
-        password: options.password
-    }, function( res ){
+    var room = this,
+        params = {},
+        cb;
+    if ( arguments.length === 1 ){
+        params.roomName = false;
+        params.password = false;
+        cb = options;
+    }
+    else {
+        params.roomName = options.roomName;
+        params.password = options.roomName;
+        cb = callback;
+    }
+
+    this.io.emit( 'createRoom', params, function( res ){
         if ( res.error )
-            callback( error );
+            cb( error );
         else {
             room.roomName = res.roomName;
             room.addPeer( res.peers );
-            callback( null, room );
+            cb( null, room );
         }
     });
 };
 
 
+/**
+ * @param {string|string[]} peerId
+ */
 Room.prototype.addPeer = function( peerId ){
     var room = this;
     if ( peerId instanceof Array )
@@ -88,8 +101,9 @@ Room.prototype.addPeer = function( peerId ){
             this.addPeer( id );
         }, this );
     else {
-        var peer = new Peer( peerId, {iceServers: options.iceServers} );
+        var peer = new Peer( peerId, {iceServers: this.iceServers} );
         this.peers.push( peer );
+
         peer.on( 'iceCandidate', function( candidate ){
             room.io.emit( 'iceCandidate', {id: room.id, candidate: candidate} );
         });
