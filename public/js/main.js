@@ -6,149 +6,188 @@
 
 /**
  * @param {Object} options
- * @param {boolean?} options.autoConnect
  * @constructor
  */
-function Server( options ){
+function Room( options ){
     this.socketUrl = options.socketUrl;
     if ( options.autoConnect )
         this.connect();
-}
-
-
-Server.prototype.connect = function(){
-    this.socket = io.connect( this.socketUrl );
-    this.emit( 'connect' );
-};
-
-
-Server.prototype.emit = function( event, data, callback ){
-    if ( arguments.length === 2 )
-        this.socket.emit( event, data );
-    else if ( arguments.length === 3 )
-        this.socket.emit( event, data, callback );
-    else
-        throw new Error( 'WTF' );
-};
-
-
-Server.prototype.on = function( event, callback ){
-    this.socket.on( event, callback );
-};
-
-
-/**
- * @param {Server} server
- * @param {Object} options
- * @constructor
- */
-function Peer( server, options ){
-    this.server = server;
     this.remoteVideo = options.remoteVideo;
     this.remoteAudio = options.remoteAudio;
-    this.id = options.id || Date.now().toString();
+    this.iceServers = options.iceServers;
+    this.id = Date.now().toString();
+    this.mediaType = StreamManager.MEDIA_VIDEO;
+    this.streamManager = new StreamManager();
+    this.peers = [];
 }
+inherit( Room, EventEmitter );
 
 
-Peer.prototype.connect = function(){
-    this.server.emit( 'initUser', {id: this.id} );
+Room.prototype.connect = function(){
+    var room = this;
+    room.io = io.connect( room.socketUrl );
+    room.io.on( 'connect', function(){
+        room.io.emit( 'initUser', {id: room.id} );
+        room.emit( 'connected' );
+    });
+
+    room.io.on( 'offer', function( offer, fn ){
+        var id = offer.id,
+            peer = room.getPeerById( id ) || room.addPeer( id );
+        peer.setOffer( offer.sdp, fn );
+    });
+
+    room.io.on( 'iceCandidate', function( req ){
+        var id = req.id,
+            peer = room.getPeerById( id );
+        if ( peer )
+            peer.addIceCandidate( req.candidate );
+    });
 };
 
 
-Peer.prototype.joinRoom = function( options, callback ){
-    var peer = this;
-    this.socket.emit( 'joinRoom', {
+Room.prototype.joinRoom = function( options, callback ){
+    var room = this;
+    this.io.emit( 'joinRoom', {
         roomName: options.roomName,
         password: options.password || ''
     }, function( res ){
         if ( res.error )
             callback( res.error );
         else {
-            peer.room = new Room( res.roomName, res.members );
-            peer.connectWithRoomMembers();
-            callback( null, peer.room );
+            room.roomName = res.roomName;
+            room.addPeer( res.peers );
+            room.connectWithMembers();
+            callback( null, room );
         }
     });
 };
 
 
-Peer.prototype.createRoom = function( options, callback ){
-    var peer = this;
-    this.server.emit( 'createRoom', {
+Room.prototype.createRoom = function( options, callback ){
+    var room = this;
+    this.io.emit( 'createRoom', {
         roomName: options.roomName,
         password: options.password
     }, function( res ){
         if ( res.error )
             callback( error );
         else {
-            peer.room = new Room( res.roomName, res.members );
-            callback( null, peer.room );
+            room.roomName = res.roomName;
+            room.addPeer( res.peers );
+            callback( null, room );
         }
     });
 };
 
 
-Peer.prototype.connectWithRoomMembers = function(){
-    this.room.getMembers().forEach( function( remotePeer ){
-        this.connectPeer( remotePeer );
+Room.prototype.addPeer = function( peerId ){
+    var room = this;
+    if ( peerId instanceof Array )
+        peerId.forEach( function( id ){
+            this.addPeer( id );
+        }, this );
+    else {
+        var peer = new Peer( peerId, {iceServers: options.iceServers} );
+        this.peers.push( peer );
+        peer.on( 'iceCandidate', function( candidate ){
+            room.io.emit( 'iceCandidate', {id: room.id, candidate: candidate} );
+        });
+
+        peer.on( 'getOffer', function( offer ){
+            room.io.emit( 'offer', {id: room.id, sdp: offer.sdp}, offer.callback );
+        });
+    }
+};
+
+
+Room.prototype.connectWithPeers = function(){
+    this.peers.forEach( function( peer ){
+        !peer.connected && peer.connect();
     }, this );
 };
 
 
-/**
- * @param {RemotePeer} peer
- */
-Peer.prototype.connectPeer = function( peer ){
-    RemotePeer.initConnection();
+Room.prototype.getPeerById = function( id ){
+    var peers = this.peers;
+    for ( var i = 0; i < peers.legth; i++ )
+        if ( peers[i].id === id )
+            return peers[i];
+    return false;
 };
 
 
-function RemotePeer( id ){
+/**
+ * @constructor
+ */
+function Peer( id, options ){
+    var peer = this;
     this.id = id;
+    this.iceServers = options.iceServers;
+
+    this.pc = new Peer.PeerConnection( this.iceServers );
+    this.pc.onicecandidate = function( event ){
+        peer.emit( 'iceCandidate', event.candidate );
+    };
+    this.pc.onaddstream = function( event ){
+        peer.stream = event.stream;
+        peer.emit( 'addStream', event.stream );
+    };
 }
+inherit( Peer, EventEmitter );
+Peer.PeerConnection = window.RTCPeerConnection || window.webkitRTCPeerConnection || window.mozRTCPeerConnection;
 
 
-RemotePeer.prototype.connect = function( user ){};
-
-
-/**
- * @param {string} name
- * @param {Array} members
- * @constructor
- */
-function Room( name, members ){
-    this.name = name;
-    this.members = members.map( function( id ){
-        return new RemotePeer( id );
+Peer.prototype.connect = function(){
+    var peer = this;
+    this.getOffer( function( sdp, callback ){
+        peer.emit( 'getOffer', {sdp: sdp, callback: callback} );
     });
-}
+};
 
 
-/**
- * @returns {Array}
- */
-Room.prototype.getMembers = function(){
-    return this.members || [];
+Peer.prototype.setOffer = function( sdp, callback ){
+    var peer = this;
+    this.pc.setRemoteDescription( new RTCSessionDescription(sdp) );
+    this.pc.createAnswer( function( sdp ){
+        peer.pc.setLocalDescription( sdp );
+        callback( sdp );
+    });
+};
+
+
+Peer.prototype.getOffer = function( callback ){
+    var peer = this;
+    this.pc.createOffer( function( offerSdp ){
+        peer.pc.setLocalDescription( offerSdp );
+        callback( offerSdp, function( remoteSdp ){
+            peer.pc.setRemoteDescription( new RTCSessionDescription(remoteSdp) );
+        });
+    });
+};
+
+
+Peer.prototype.addIceCandidate = function( candidate ){
+    this.pc.addIceCandidate( new RTCIceCandidate(candidate) );
 };
 
 
 /**
  * @constructor
+ * @singleton
  */
 function StreamManager(){
-    this.localStreams = {};
-    StreamManager._instance = this;
+    if ( !StreamManager._instance ){
+        this.localStreams = {};
+        StreamManager._instance = this;
+    }
+    return StreamManager._instance;
 }
 
 
 StreamManager.MEDIA_AUDIO = 'audio';
 StreamManager.MEDIA_VIDEO = 'video';
 StreamManager.MEDIA_SCREEN = 'screen';
-
-
-StreamManager.getInstance = function(){
-    return StreamManager._instance || new StreamManager();
-};
 
 
 /**

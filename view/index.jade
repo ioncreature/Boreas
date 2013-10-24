@@ -50,13 +50,15 @@ html
                 a(href='https://github.com/ioncreature', target='_blank') Alexander Marenin
         script.
             $( function(){
-                var chat = new Chat({
+                var peer = new Peer({
                     remoteVideo: document.getElementById('remote-video'),
                     localVideo: document.getElementById('local-video'),
                     remoteAudio: document.getElementById('remote-audio'),
-                    socketUrl: '#{socketUrl}'
+                    socketUrl: '#{socketUrl}',
+                    autoConnect: true,
+                    iceServers: [{"url": "stun:stun.l.google.com:19302"}]
                 });
-                chat.connect();
+                peer.connect();
 
                 $( '#newRoom' ).click( function(){
                     console.log( 'new room click' );
