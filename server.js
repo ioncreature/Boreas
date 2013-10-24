@@ -52,7 +52,67 @@ app.get( '/', function( req, res ){
 var rooms = {},
     peers = {};
 
-io.on( 'createRoom', function( data, cb ){
+io.sockets.on( 'connection', function( socket ){
+    var id,
+        peer;
 
+    socket.on( 'disconnect', function (){
+        delete peers[id];
+    });
+
+    socket.on( 'initUser', function( data, cb ){
+        id = data.id;
+        peer = new Peer( id, socket );
+        peers[id] = peer;
+    });
+
+    socket.on( 'createRoom', function( data, cb ){
+        var name = data.name;
+        if ( name ){
+            if ( rooms[name] ){
+                cb( {error: 'Room already exists'} );
+                return;
+            }
+        }
+        else do
+            name = generateId();
+        while ( rooms[name] );
+
+        var room = new Room( name, data.password || false, [id] );
+        rooms[name] = room;
+        cb( {name: room.name, peers: room.peers} );
+    });
 });
 
+
+function generateId(){
+    var p1 = cutRight( Math.random() * 100000, 5 ),
+        p2 = cutRight( Date.now() * (Number(p1[0]) || 1), 5 );
+    return p1 + p2;
+}
+
+
+function cutRight( str, /*int*/ count ){
+    var s = String( str ),
+        lastIndex = s.length - 1;
+    return s.substring( lastIndex - count );
+}
+
+
+/**
+ * @constructor
+ */
+function Room( name, password, peers ){
+    this.name = name;
+    this.password = password;
+    this.peers = peers;
+}
+
+
+/**
+ * @constructor
+ */
+function Peer( id, socket ){
+    this.id = id;
+    this.socket = socket;
+}

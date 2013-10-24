@@ -49,13 +49,13 @@ Room.prototype.connect = function(){
 Room.prototype.joinRoom = function( options, callback ){
     var room = this;
     this.io.emit( 'joinRoom', {
-        roomName: options.roomName,
+        name: options.name,
         password: options.password || ''
     }, function( res ){
         if ( res.error )
             callback( res.error );
         else {
-            room.roomName = res.roomName;
+            room.roomName = res.name;
             room.addPeer( res.peers );
             room.connectWithPeers();
             callback( null, room );
@@ -69,22 +69,21 @@ Room.prototype.createRoom = function( options, callback ){
         params = {},
         cb;
     if ( arguments.length === 1 ){
-        params.roomName = false;
+        params.name = false;
         params.password = false;
         cb = options;
     }
     else {
-        params.roomName = options.roomName;
-        params.password = options.roomName;
+        params.name = options.name;
+        params.password = options.password;
         cb = callback;
     }
 
     this.io.emit( 'createRoom', params, function( res ){
         if ( res.error )
-            cb( error );
+            cb( res.error );
         else {
-            room.roomName = res.roomName;
-            room.addPeer( res.peers );
+            room.roomName = res.name;
             cb( null, room );
         }
     });
@@ -100,7 +99,7 @@ Room.prototype.addPeer = function( peerId ){
         peerId.forEach( function( id ){
             this.addPeer( id );
         }, this );
-    else {
+    else if ( peerId != this.id ){
         var peer = new Peer( peerId, {iceServers: this.iceServers} );
         this.peers.push( peer );
 
@@ -139,7 +138,7 @@ function Peer( id, options ){
     this.id = id;
     this.iceServers = options.iceServers;
 
-    this.pc = new Peer.PeerConnection( this.iceServers );
+    this.pc = new Peer.PeerConnection( {iceServers: this.iceServers} );
     this.pc.onicecandidate = function( event ){
         peer.emit( 'iceCandidate', event.candidate );
     };
