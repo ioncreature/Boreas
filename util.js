@@ -132,3 +132,16 @@ exports.trim = function( val ){
     return String( val ).trim();
 };
 
+
+exports.generateId = function(){
+    var p1 = cutRight( Math.random() * 100000, 5 ),
+        p2 = cutRight( Date.now() * (Number(p1[0]) || 1), 5 );
+    return p1 + p2;
+};
+
+
+function cutRight( str, count ){
+    var s = String( str ),
+        lastIndex = s.length - 1;
+    return s.substring( lastIndex - count );
+}

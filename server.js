@@ -75,28 +75,15 @@ io.sockets.on( 'connection', function( socket ){
             }
         }
         else do
-            name = generateId();
+            name = util.generateId();
         while ( rooms[name] );
 
         var room = new Room( name, data.password || false, [id] );
         rooms[name] = room;
+        peer.setRoomName( room.name );
         cb( {name: room.name, peers: room.peers} );
     });
 });
-
-
-function generateId(){
-    var p1 = cutRight( Math.random() * 100000, 5 ),
-        p2 = cutRight( Date.now() * (Number(p1[0]) || 1), 5 );
-    return p1 + p2;
-}
-
-
-function cutRight( str, /*int*/ count ){
-    var s = String( str ),
-        lastIndex = s.length - 1;
-    return s.substring( lastIndex - count );
-}
 
 
 /**
@@ -116,3 +103,8 @@ function Peer( id, socket ){
     this.id = id;
     this.socket = socket;
 }
+
+
+Peer.prototype.setRoomName = function( id ){
+    this.roomId = id;
+};
