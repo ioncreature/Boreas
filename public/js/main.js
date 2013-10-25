@@ -113,6 +113,7 @@ Room.prototype.addPeer = function( peerId ){
             room.io.emit( 'offer', {id: peer.id, sdp: offer.sdp}, offer.callback );
         });
     }
+    return peer;
 };
 
 
@@ -175,8 +176,8 @@ Peer.prototype.getOffer = function( callback ){
     var peer = this;
     this.pc.createOffer( function( offerSdp ){
         peer.pc.setLocalDescription( offerSdp );
-        callback( offerSdp, function( remoteSdp ){
-            peer.pc.setRemoteDescription( new RTCSessionDescription(remoteSdp) );
+        callback( offerSdp, function( answer ){
+            peer.pc.setRemoteDescription( new RTCSessionDescription(answer.sdp) );
             peer.connected = true;
         });
     });
