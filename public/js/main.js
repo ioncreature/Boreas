@@ -55,12 +55,12 @@ Room.prototype.joinRoom = function( options, callback ){
         password: options.password || ''
     }, function( res ){
         if ( res.error )
-            callback( res.error );
+            callback( {error: res.error} );
         else {
-            room.roomName = res.name;
+            room.name = res.name;
             room.addPeer( res.peers );
             room.connectWithPeers();
-            callback( null, room );
+            callback( {room: room} );
         }
     });
 };
@@ -83,10 +83,10 @@ Room.prototype.createRoom = function( options, callback ){
 
     this.io.emit( 'createRoom', params, function( res ){
         if ( res.error )
-            cb( res.error );
+            cb( {error: res.error} );
         else {
-            room.roomName = res.name;
-            cb( null, room );
+            room.name = res.name;
+            cb( {room: room} );
         }
     });
 };

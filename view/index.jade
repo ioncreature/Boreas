@@ -5,27 +5,6 @@
 html
     head
         title Video Chat
-        style.
-            #remote-video {
-                position: absolute;
-                top: 0;
-                left: 0;
-                width: 100%;
-                height: 100%;
-                z-index: 1;
-            }
-
-            #local-video {
-                position: absolute;
-                top: 10px;
-                right: 10px;
-                width: 240px;
-                height: 160px;
-                z-index: 2;
-                border: 5px solid rgba(0, 0, 0, .5);
-                border-radius: 4px;
-                background-color: grey;
-            }
         link(href='http://fonts.googleapis.com/css?family=Droid+Sans:400,700', rel='stylesheet', type='text/css')
         link(rel='stylesheet', href='public/css/bootstrap.css')
         link(rel='stylesheet', href='public/css/style.css')
@@ -33,9 +12,11 @@ html
         script(src='public/js/socket.io.min.js')
     body
         #video
+            #roomInfo.form-group.fat-border
+                input#roomInfoName.input-lg(type="text")
             audio#remote-audio
             video#remote-video
-            video#local-video
+            video#local-video.fat-border
 
         #wrap
             #header
@@ -47,8 +28,8 @@ html
                         button#openJoinRoomForm.btn.btn-success.btn-lg.btn-block Join Room
                     #joinRoomForm.dark-box.form-container
                         .form-group
-                            label(for="roomName") Room Id
-                            input#roomName.form-control.input-lg(type="text", placeholder="Enter Room Identifier")
+                            label(for="roomName") Room Name
+                            input#roomName.form-control.input-lg(type="text", placeholder="Enter Room Name")
                         .centered
                             button#join.btn.btn-success.btn-lg Join
                             button#rejectJoin.btn.btn-danger.btn-lg Cancel
@@ -61,7 +42,8 @@ html
                     videoContainer = $( '#video' ),
                     joinRoomForm = $( '#joinRoomForm' ),
                     buttonJoin = $( '#join' ),
-                    roomName = $( '#roomName' );
+                    roomName = $( '#roomName' ),
+                    roomInfoName = $( '#roomInfoName' );
 
                 buttonsContainer.fadeIn();
 
@@ -77,9 +59,11 @@ html
                 $( '#newRoom' ).click( function(){
                     buttonsContainer.fadeOut();
                     videoContainer.fadeIn();
-                    room.createRoom( function( error ){
-                        if ( error )
+                    room.createRoom( function( res ){
+                        if ( res.error )
                             alert( error );
+                        else
+                            roomInfoName.val( room.name );
                     });
                 });
                 $( '#openJoinRoomForm' ).click( function(){
@@ -96,8 +80,16 @@ html
                 });
 
                 buttonJoin.click( function(){
-                    if ( roomName.val().trim() )
-                        console.log( 'try to join room' );
+                    var name = roomName.val().trim();
+                    if ( name )
+                        room.joinRoom({ name: name }, function( res ){
+                            if ( res.error )
+                                alert( res.error );
+                            else {
+                                joinRoomForm.fadeOut();
+                                videoContainer.fadeIn();
+                            }
+                        });
                     else
                         roomName.closest( '.form-group' ).addClass( 'has-error' );
                 });
