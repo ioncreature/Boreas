@@ -57,7 +57,7 @@ io.sockets.on( 'connection', function( socket ){
     var peer;
 
     socket.on( 'disconnect', function (){
-        delete peers[id];
+        delete peers[peer.id];
     });
 
     socket.on( 'initUser', function( data, cb ){
@@ -80,7 +80,7 @@ io.sockets.on( 'connection', function( socket ){
         var room = new Room( name, data.password || false, peer );
         rooms[name] = room;
         peer.setRoomName( name );
-        cb( {name: room.name, peers: room.peers} );
+        cb( {name: room.name, peers: room.getPeerIds()} );
     });
 
     socket.on( 'joinRoom', function( data, callback ){
@@ -128,6 +128,7 @@ function Room( name, password, ownerPeer ){
     this.name = name;
     this.password = password;
     this.owner = ownerPeer;
+    this.peers = [];
     this.addPeer( ownerPeer );
 }
 

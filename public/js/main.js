@@ -32,12 +32,14 @@ Room.prototype.connect = function(){
     });
 
     room.io.on( 'offer', function( offer, fn ){
+        console.log( 'offer', offer );
         var id = offer.id,
             peer = room.getPeerById( id ) || room.addPeer( id );
         peer.setOffer( offer.sdp, fn );
     });
 
     room.io.on( 'iceCandidate', function( req ){
+        console.log( 'iceCandidate', req );
         var id = req.id,
             peer = room.getPeerById( id );
         if ( peer )
