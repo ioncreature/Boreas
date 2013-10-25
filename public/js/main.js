@@ -360,13 +360,16 @@ function inherit( ChildClass, BaseClass ){
             enumerable: false,
             value: ChildClass
         },
-        base: function(){
-            // It doesn't work in strict mode
-            var name = arguments.callee.name;
-            if ( typeof BaseClass.prototype[name] === 'function' )
-                BaseClass.prototype[name].apply( this, arguments );
-            else
-                throw new ReferenceError( 'Unknown method "'+ name +'"' );
+        base: {
+            enumerable: false,
+            value: function(){
+                // It doesn't work in strict mode
+                var name = arguments.callee.name;
+                if ( typeof BaseClass.prototype[name] === 'function' )
+                    return BaseClass.prototype[name].apply( this, arguments );
+                else
+                    throw new ReferenceError( 'Unknown method "'+ name +'"' );
+            }
         }
     });
     mixin( ChildClass.prototype, proto );
