@@ -104,11 +104,11 @@ Room.prototype.addPeer = function( peerId ){
         this.peers.push( peer );
 
         peer.on( 'iceCandidate', function( candidate ){
-            room.io.emit( 'iceCandidate', {id: room.id, candidate: candidate} );
+            room.io.emit( 'iceCandidate', {id: peer.id, candidate: candidate} );
         });
 
         peer.on( 'getOffer', function( offer ){
-            room.io.emit( 'offer', {id: room.id, sdp: offer.sdp}, offer.callback );
+            room.io.emit( 'offer', {id: peer.id, sdp: offer.sdp}, offer.callback );
         });
     }
 };
@@ -164,7 +164,7 @@ Peer.prototype.setOffer = function( sdp, callback ){
     this.pc.setRemoteDescription( new RTCSessionDescription(sdp) );
     this.pc.createAnswer( function( sdp ){
         peer.pc.setLocalDescription( sdp );
-        callback( sdp );
+        callback( {sdp: sdp} );
     });
 };
 
@@ -175,6 +175,7 @@ Peer.prototype.getOffer = function( callback ){
         peer.pc.setLocalDescription( offerSdp );
         callback( offerSdp, function( remoteSdp ){
             peer.pc.setRemoteDescription( new RTCSessionDescription(remoteSdp) );
+            peer.connected = true;
         });
     });
 };

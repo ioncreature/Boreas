@@ -49,21 +49,20 @@ app.get( '/', function( req, res ){
 
 // SOCKET
 
+
 var rooms = {},
     peers = {};
 
 io.sockets.on( 'connection', function( socket ){
-    var id,
-        peer;
+    var peer;
 
     socket.on( 'disconnect', function (){
         delete peers[id];
     });
 
     socket.on( 'initUser', function( data, cb ){
-        id = data.id;
-        peer = new Peer( id, socket );
-        peers[id] = peer;
+        peer = new Peer( data.id, socket );
+        peers[peer.id] = peer;
     });
 
     socket.on( 'createRoom', function( data, cb ){
@@ -78,10 +77,46 @@ io.sockets.on( 'connection', function( socket ){
             name = util.generateId();
         while ( rooms[name] );
 
-        var room = new Room( name, data.password || false, [id] );
+        var room = new Room( name, data.password || false, peer );
         rooms[name] = room;
-        peer.setRoomName( room.name );
+        peer.setRoomName( name );
         cb( {name: room.name, peers: room.peers} );
+    });
+
+    socket.on( 'joinRoom', function( data, callback ){
+        var name = data.name,
+            room = name && rooms[name];
+
+        if ( !name )
+            callback( {error: 'Room name cannot be empty'} );
+        else if ( !room )
+            callback( {error: 'Unable to find room with such name'} );
+        else if ( !room.isPasswordCorrect(data.password) )
+            callback( {error: 'Wrong password'} );
+        else {
+            room.addPeer( peer );
+            callback( {name: room.name, peers: room.getPeerIds()} );
+        }
+    });
+
+    socket.on( 'offer', function( offer, callback ){
+        var remotePeerId = offer.id,
+            remotePeer = remotePeerId && peers[remotePeerId];
+        if ( !remotePeer )
+            callback( {error: 'There is no remote peer'} );
+        else
+            remotePeer.socket.emit( 'offer', {id: peer.id, sdp: offer.sdp}, function( answer ){
+                if ( answer.reject )
+                    callback( {reject: true} );
+                else
+                    callback( {sdp: answer.sdp} );
+            });
+    });
+
+    socket.on( 'iceCandidate', function( data ){
+        var remotePeer = peers[data.id];
+        if ( remotePeer )
+            remotePeer.socket.emit( 'iceCandidate', {id: peer.id, candidate: data.candidate} );
     });
 });
 
@@ -89,11 +124,30 @@ io.sockets.on( 'connection', function( socket ){
 /**
  * @constructor
  */
-function Room( name, password, peers ){
+function Room( name, password, ownerPeer ){
     this.name = name;
     this.password = password;
-    this.peers = peers;
+    this.owner = ownerPeer;
+    this.addPeer( ownerPeer );
 }
+
+
+Room.prototype.isPasswordCorrect = function( pass ){
+    return !this.password || pass === this.password;
+};
+
+
+Room.prototype.addPeer = function( id ){
+    if ( this.peers.indexOf(id) === -1 )
+        this.peers.push( id );
+};
+
+
+Room.prototype.getPeerIds = function(){
+    return this.peers.map( function( peer ){
+        return peer.id;
+    });
+};
 
 
 /**
@@ -105,6 +159,6 @@ function Peer( id, socket ){
 }
 
 
-Peer.prototype.setRoomName = function( id ){
-    this.roomId = id;
+Peer.prototype.setRoomName = function( name ){
+    this.roomName = name;
 };
