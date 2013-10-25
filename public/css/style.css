@@ -38,18 +38,18 @@ body {
     text-align: center;
 }
 
-.white-box {
+.dark-box {
     background-color: rgba(30, 30, 30, 0.3);
     -webkit-box-shadow: 0 1px 5px rgba(0, 0, 0, .2);
        -moz-box-shadow: 0 1px 5px rgba(0, 0, 0, .2);
             box-shadow: 0 1px 5px rgba(0, 0, 0, .2);
+    color: #d0d0d0;
 }
 
 .form-container {
     margin: 0 auto;
     padding: 10px;
     border-radius: 5px;
-    text-align: center;
 }
 
 #footer {
@@ -70,6 +70,34 @@ body {
     width: 100%;
 }
 
+#buttons {
+    display: none;
+}
+
 #joinRoomForm {
     display: none;
 }
+
+#roomName {
+    background-color: rgba(255, 255, 255, 0.8);
+}
+
+.has-error #roomName {
+    background-color: rgba(255, 220, 225, 0.8);
+}
+
+
+button#join {
+    width: 35%;
+    margin-right: 15px;
+}
+
+button#rejectJoin {
+    width: 35%;
+}
+
+
+.centered {
+    text-align: center;
+}
+
