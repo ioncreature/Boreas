@@ -43,17 +43,44 @@ html
                     joinRoomForm = $( '#joinRoomForm' ),
                     buttonJoin = $( '#join' ),
                     roomName = $( '#roomName' ),
-                    roomInfoName = $( '#roomInfoName' );
+                    roomInfoName = $( '#roomInfoName' ),
+                    localStreamShowed = false;
+
+                var remoteVideo = document.getElementById('remote-video'),
+                    localVideo = document.getElementById('local-video'),
+                    remoteAudio = document.getElementById('remote-audio');
 
                 buttonsContainer.fadeIn();
 
                 var room = new Room({
-                    remoteVideo: document.getElementById('remote-video'),
-                    localVideo: document.getElementById('local-video'),
-                    remoteAudio: document.getElementById('remote-audio'),
                     socketUrl: '#{socketUrl}',
                     autoConnect: true,
                     iceServers: [{url: 'stun:stun.l.google.com:19302'}]
+                });
+
+                room.on( 'connected', function(){
+                    console.log( 'connected' );
+                    // return;
+                    room.streamManager.getLocalStream( StreamManager.MEDIA_VIDEO, function( error, stream ){
+                        if ( error )
+                            alert( 'Error happened when tried to catch local media stream' );
+                        else
+                            room.streamManager.attachStream( stream, localVideo );
+                    });
+                });
+
+                room.on( 'remoteStream', function( data ){
+                    console.log( 'remoteStream', data );
+                    var stream = data.stream;
+                    room.streamManager.attachStream( stream, remoteVideo );
+                });
+
+                room.on( 'peerConnected', function( peer ){
+                    console.log( 'peerConnected', peer.id );
+                    setTimeout( function(){
+                        console.log( 'sendVideo' );
+                        peer.sendVideo();
+                    }, 500 );
                 });
 
                 $( '#newRoom' ).click( function(){

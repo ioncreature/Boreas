@@ -117,7 +117,7 @@ button#rejectJoin {
     width: 240px;
     height: 160px;
     z-index: 2;
-    background-color: grey;
+    background-color: rgba(255, 255, 255, 0.3);
 }
 
 #roomInfo {
@@ -126,13 +126,13 @@ button#rejectJoin {
     right: 10px;
     width: 240px;
     z-index: 3;
-    background-color: grey;
 }
 
 #roomInfo input {
-    opacity: 0.6;
+    background-color: rgba(255, 255, 255, 0.3);
     border: 0;
     width: 100%;
+    border-radius: 0;
 }
 
 .fat-border {

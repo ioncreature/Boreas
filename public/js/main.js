@@ -12,11 +12,9 @@ function Room( options ){
     this.socketUrl = options.socketUrl;
     if ( options.autoConnect )
         this.connect();
-    this.remoteVideo = options.remoteVideo;
-    this.remoteAudio = options.remoteAudio;
     this.iceServers = options.iceServers;
     this.id = Date.now().toString();
-    this.mediaType = StreamManager.MEDIA_VIDEO;
+    this.mediaType = StreamManager.MEDIA_VIDEO || options.mediaType;
     this.streamManager = new StreamManager();
     this.peers = [];
 }
@@ -42,7 +40,7 @@ Room.prototype.connect = function(){
         console.log( 'iceCandidate', req );
         var id = req.id,
             peer = room.getPeerById( id );
-        if ( peer )
+        if ( peer && req.candidate )
             peer.addIceCandidate( req.candidate );
     });
 };
@@ -112,6 +110,14 @@ Room.prototype.addPeer = function( peerId ){
         peer.on( 'getOffer', function( offer ){
             room.io.emit( 'offer', {id: peer.id, sdp: offer.sdp}, offer.callback );
         });
+
+        peer.on( 'connected', function(){
+            room.emit( 'peerConnected', peer );
+        });
+
+        peer.on( 'remoteStream', function( stream ){
+            room.emit( 'remoteStream', {peer: peer, stream: stream} );
+        });
     }
     return peer;
 };
@@ -126,7 +132,7 @@ Room.prototype.connectWithPeers = function(){
 
 Room.prototype.getPeerById = function( id ){
     var peers = this.peers;
-    for ( var i = 0; i < peers.legth; i++ )
+    for ( var i = 0; i < peers.length; i++ )
         if ( peers[i].id === id )
             return peers[i];
     return false;
@@ -146,8 +152,18 @@ function Peer( id, options ){
         peer.emit( 'iceCandidate', event.candidate );
     };
     this.pc.onaddstream = function( event ){
-        peer.stream = event.stream;
-        peer.emit( 'addStream', event.stream );
+        peer.remoteStream = event.stream;
+        peer.emit( 'remoteStream', event.stream );
+    };
+    this.pc.onsignalingstatechange = function(){
+        console.log( peer.pc.signalingState );
+        if ( peer.pc.signalingState === 'stable' ){
+            peer.connected = true;
+            peer.emit( 'connected' );
+        }
+    };
+    this.pc.onnegotiationneeded = function(){
+        console.log( 'onnegotiationneeded' );
     };
 }
 inherit( Peer, EventEmitter );
@@ -164,10 +180,11 @@ Peer.prototype.connect = function(){
 
 Peer.prototype.setOffer = function( sdp, callback ){
     var peer = this;
-    this.pc.setRemoteDescription( new RTCSessionDescription(sdp) );
-    this.pc.createAnswer( function( sdp ){
-        peer.pc.setLocalDescription( sdp );
-        callback( {sdp: sdp} );
+    this.pc.setRemoteDescription( new RTCSessionDescription(sdp), function(){
+        peer.pc.createAnswer( function( sdp ){
+            peer.pc.setLocalDescription( sdp );
+            callback( {sdp: sdp} );
+        });
     });
 };
 
@@ -175,10 +192,10 @@ Peer.prototype.setOffer = function( sdp, callback ){
 Peer.prototype.getOffer = function( callback ){
     var peer = this;
     this.pc.createOffer( function( offerSdp ){
-        peer.pc.setLocalDescription( offerSdp );
-        callback( offerSdp, function( answer ){
-            peer.pc.setRemoteDescription( new RTCSessionDescription(answer.sdp) );
-            peer.connected = true;
+        peer.pc.setLocalDescription( offerSdp, function(){
+            callback( offerSdp, function( answer ){
+                peer.pc.setRemoteDescription( new RTCSessionDescription(answer.sdp) );
+            });
         });
     });
 };
@@ -186,6 +203,38 @@ Peer.prototype.getOffer = function( callback ){
 
 Peer.prototype.addIceCandidate = function( candidate ){
     this.pc.addIceCandidate( new RTCIceCandidate(candidate) );
+};
+
+
+Peer.prototype.sendMedia = function( mediaType, callback ){
+    var peer = this,
+        manager = new StreamManager();
+    manager.getLocalStream( mediaType, function( error, stream ){
+        if ( error )
+            callback( error );
+        else
+            peer.pc.addStream( stream );
+    });
+};
+
+
+Peer.prototype.sendAudio = function(){
+    this.sendMedia( StreamManager.MEDIA_AUDIO );
+};
+
+
+Peer.prototype.sendVideo = function(){
+    this.sendMedia( StreamManager.MEDIA_VIDEO );
+};
+
+
+Peer.prototype.sendAudioVideo = function(){
+    this.sendMedia( StreamManager.MEDIA_AUDIO_VIDEO );
+};
+
+
+Peer.prototype.sendScreen = function(){
+    this.sendMedia( StreamManager.MEDIA_SCREEN );
 };
 
 
@@ -204,24 +253,34 @@ function StreamManager(){
 
 StreamManager.MEDIA_AUDIO = 'audio';
 StreamManager.MEDIA_VIDEO = 'video';
+StreamManager.MEDIA_AUDIO_VIDEO = 'audio video';
 StreamManager.MEDIA_SCREEN = 'screen';
 
 
 /**
  * @param {StreamManager.MEDIA_AUDIO|StreamManager.MEDIA_VIDEO|StreamManager.MEDIA_SCREEN} type
- * @param {Function} callback
+ * @param {function(error?, stream?)} callback
  */
 StreamManager.prototype.getLocalStream = function( type, callback ){
+    var manager = this;
     if ( this.localStreams[type] )
         callback( null, this.localStreams[type] );
     else if ( StreamManager.MEDIA_AUDIO === type )
-        this.getUserMedia( {video: false, audio: true}, callback );
+        this.getUserMedia( {video: false, audio: true}, saveStream );
     else if ( StreamManager.MEDIA_VIDEO === type )
-        this.getUserMedia( {video: true, audio: true}, callback );
+        this.getUserMedia( {video: true, audio: false}, saveStream );
+    else if ( StreamManager.MEDIA_AUDIO_VIDEO === type )
+            this.getUserMedia( {video: true, audio: true}, saveStream );
     else if ( StreamManager.MEDIA_SCREEN === type )
-        this.getUserMedia( {video: true, audio: true, mediaSource: 'screen'}, callback );
+        this.getUserMedia( {video: true, audio: true, mediaSource: 'screen'}, saveStream );
     else
         throw new TypeError( 'Unknown media type: "' + type + '"' );
+
+    function saveStream( error, stream ){
+        if ( !error )
+            manager.localStreams[type] = stream;
+        callback( error, stream );
+    }
 };
 
 
@@ -229,7 +288,7 @@ StreamManager.prototype.getLocalStream = function( type, callback ){
  * @param {Object} options
  * @param {Function} callback
  */
-StreamManager.prototype.getUserMedia = function getUserMedia( options, callback ){
+StreamManager.prototype.getUserMedia = function( options, callback ){
     navigator.getUserMedia = navigator.getUserMedia || navigator.webkitGetUserMedia || navigator.mozGetUserMedia;
     navigator.getUserMedia(
         { audio: options.audio, video: options.video },
@@ -242,6 +301,26 @@ StreamManager.prototype.getUserMedia = function getUserMedia( options, callback 
     );
 };
 
+
+/**
+ * @param {Stream} stream
+ * @param {Element} node
+ */
+StreamManager.prototype.attachStream = function( stream, node ){
+    if ( !node )
+        throw new Error( 'Hey man, where is my video node? Fuck off!' );
+
+    if ( isFirefox() )
+        node.mozSrcObject = stream;
+    else
+        node.src = URL.createObjectURL( stream );
+
+    node.play && node.play();
+
+    function isFirefox(){
+        return !!navigator.mozGetUserMedia;
+    }
+};
 
 
 /**
