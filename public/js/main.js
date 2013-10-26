@@ -10,13 +10,14 @@
  */
 function Room( options ){
     this.socketUrl = options.socketUrl;
-    if ( options.autoConnect )
-        this.connect();
     this.iceServers = options.iceServers;
     this.id = Date.now().toString();
     this.mediaType = StreamManager.MEDIA_VIDEO || options.mediaType;
     this.streamManager = new StreamManager();
     this.peers = [];
+
+    if ( options.autoConnect )
+        this.connect();
 }
 inherit( Room, EventEmitter );
 
@@ -33,6 +34,7 @@ Room.prototype.connect = function(){
         console.log( 'offer', offer );
         var id = offer.id,
             peer = room.getPeerById( id ) || room.addPeer( id );
+        peer.addStream( room.localStream );
         peer.setOffer( offer.sdp, fn );
     });
 
@@ -42,6 +44,10 @@ Room.prototype.connect = function(){
             peer = room.getPeerById( id );
         if ( peer && req.candidate )
             peer.addIceCandidate( req.candidate );
+    });
+
+    room.streamManager.getLocalStream( StreamManager.MEDIA_VIDEO, function( error, stream ){
+        room.localStream = stream;
     });
 };
 
@@ -125,7 +131,7 @@ Room.prototype.addPeer = function( peerId ){
 
 Room.prototype.connectWithPeers = function(){
     this.peers.forEach( function( peer ){
-        !peer.connected && peer.connect();
+        !peer.connected && peer.connect( this.localStream );
     }, this );
 };
 
@@ -170,8 +176,9 @@ inherit( Peer, EventEmitter );
 Peer.PeerConnection = window.RTCPeerConnection || window.webkitRTCPeerConnection || window.mozRTCPeerConnection;
 
 
-Peer.prototype.connect = function(){
+Peer.prototype.connect = function( stream ){
     var peer = this;
+    this.addStream( stream );
     this.getOffer( function( sdp, callback ){
         peer.emit( 'getOffer', {sdp: sdp, callback: callback} );
     });
@@ -235,6 +242,11 @@ Peer.prototype.sendAudioVideo = function(){
 
 Peer.prototype.sendScreen = function(){
     this.sendMedia( StreamManager.MEDIA_SCREEN );
+};
+
+
+Peer.prototype.addStream = function( stream ){
+    this.pc.addStream( stream );
 };
 
 

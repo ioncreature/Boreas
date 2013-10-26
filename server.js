@@ -74,7 +74,7 @@ io.sockets.on( 'connection', function( socket ){
             }
         }
         else do
-            name = util.generateId();
+            name = util.generateId(6);
         while ( rooms[name] );
 
         var room = new Room( name, data.password || false, peer );

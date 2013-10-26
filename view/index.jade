@@ -77,10 +77,6 @@ html
 
                 room.on( 'peerConnected', function( peer ){
                     console.log( 'peerConnected', peer.id );
-                    setTimeout( function(){
-                        console.log( 'sendVideo' );
-                        peer.sendVideo();
-                    }, 500 );
                 });
 
                 $( '#newRoom' ).click( function(){

@@ -133,15 +133,14 @@ exports.trim = function( val ){
 };
 
 
-exports.generateId = function(){
-    var p1 = cutRight( Math.random() * 100000, 5 ),
-        p2 = cutRight( Date.now() * (Number(p1[0]) || 1), 5 );
+exports.generateId = function( length ){
+    var p1 = cutRight( Math.random() * 100000, parseInt(length / 2) ),
+        p2 = cutRight( Date.now() * (Number(p1[0]) || 1), parseInt(length / 2) );
     return p1 + p2;
 };
 
 
 function cutRight( str, count ){
-    var s = String( str ),
-        lastIndex = s.length - 1;
-    return s.substring( lastIndex - count );
+    var s = String( str );
+    return s.substring( s.length - count );
 }
