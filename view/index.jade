@@ -54,6 +54,7 @@ html
 
                 var room = new Room({
                     socketUrl: '#{socketUrl}',
+                    mediaType: 'screen',
                     autoConnect: true,
                     iceServers: [{url: 'stun:stun.l.google.com:19302'}]
                 });
@@ -123,4 +124,5 @@ html
                 });
             });
         script(src='public/js/bootstrap.min.js')
+        script(src='public/js/utils.js')
         script(src='public/js/main.js')
