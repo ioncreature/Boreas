@@ -18,6 +18,7 @@ var util = require( './util' ),
     config = util.getConfig( commander.config ),
     socket = require( 'socket.io' );
 
+config.port = commander.port || config.port;
 
 var app = express(),
     server = http.createServer( app ),
@@ -34,15 +35,16 @@ app.use( config.debug ? express.logger('dev') : express.logger() );
 app.use( '/public', express.static('./public') );
 app.use( app.router );
 
-server.listen( commander.port || config.port );
+server.listen( config.port );
 
 
 // HTTP
 
 
 app.get( '/', function( req, res ){
+    var socketUrl = config.protocol + '://' + config.externalHostName + ':' + config.port;
     res.render( 'index', {
-        socketUrl: config.socketUrl
+        socketUrl: socketUrl
     });
 });
 

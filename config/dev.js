@@ -9,4 +9,6 @@ exports.port = 1337;
 
 exports.proxyUsed = false;
 
-exports.socketUrl = 'http://localhost:' + exports.port;
+exports.externalHostName = '192.168.1.3';
+
+exports.protocol = 'http';
