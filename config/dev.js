@@ -7,8 +7,10 @@ exports.debug = true;
 
 exports.port = 1337;
 
+exports.externalPort = 80;
+
 exports.proxyUsed = false;
 
-exports.externalHostName = '192.168.1.3';
+exports.host = '192.168.1.3';
 
 exports.protocol = 'http';

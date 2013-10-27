@@ -42,7 +42,7 @@ server.listen( config.port );
 
 
 app.get( '/', function( req, res ){
-    var socketUrl = config.protocol + '://' + config.externalHostName + ':' + config.port;
+    var socketUrl = config.protocol + '://' + config.host + ':' + config.port;
     res.render( 'index', {
         socketUrl: socketUrl
     });
