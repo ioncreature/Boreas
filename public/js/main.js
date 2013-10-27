@@ -12,7 +12,7 @@ function Room( options ){
     this.socketUrl = options.socketUrl;
     this.iceServers = options.iceServers;
     this.id = Date.now().toString();
-    this.mediaType = StreamManager.MEDIA_VIDEO || options.mediaType;
+    this.mediaType = options.mediaType || StreamManager.MEDIA_VIDEO;
     this.streamManager = new StreamManager();
     this.peers = [];
 
@@ -31,7 +31,6 @@ Room.prototype.connect = function(){
     });
 
     room.io.on( 'offer', function( offer, fn ){
-        console.log( 'offer', offer );
         var id = offer.id,
             peer = room.getPeerById( id ) || room.addPeer( id );
         peer.addStream( room.localStream );
@@ -39,15 +38,15 @@ Room.prototype.connect = function(){
     });
 
     room.io.on( 'iceCandidate', function( req ){
-        console.log( 'iceCandidate', req );
         var id = req.id,
             peer = room.getPeerById( id );
         if ( peer && req.candidate )
             peer.addIceCandidate( req.candidate );
     });
 
-    room.streamManager.getLocalStream( StreamManager.MEDIA_VIDEO, function( error, stream ){
+    room.streamManager.getLocalStream( room.mediaType, function( error, stream ){
         room.localStream = stream;
+        room.emit( 'localStream', stream );
     });
 };
 
@@ -162,14 +161,13 @@ function Peer( id, options ){
         peer.emit( 'remoteStream', event.stream );
     };
     this.pc.onsignalingstatechange = function(){
-        console.log( peer.pc.signalingState );
         if ( peer.pc.signalingState === 'stable' ){
             peer.connected = true;
             peer.emit( 'connected' );
         }
     };
     this.pc.onnegotiationneeded = function(){
-        console.log( 'onnegotiationneeded' );
+        console.log( 'Negotiation Needed' );
     };
 }
 inherit( Peer, EventEmitter );
@@ -213,38 +211,6 @@ Peer.prototype.addIceCandidate = function( candidate ){
 };
 
 
-Peer.prototype.sendMedia = function( mediaType, callback ){
-    var peer = this,
-        manager = new StreamManager();
-    manager.getLocalStream( mediaType, function( error, stream ){
-        if ( error )
-            callback( error );
-        else
-            peer.pc.addStream( stream );
-    });
-};
-
-
-Peer.prototype.sendAudio = function(){
-    this.sendMedia( StreamManager.MEDIA_AUDIO );
-};
-
-
-Peer.prototype.sendVideo = function(){
-    this.sendMedia( StreamManager.MEDIA_VIDEO );
-};
-
-
-Peer.prototype.sendAudioVideo = function(){
-    this.sendMedia( StreamManager.MEDIA_AUDIO_VIDEO );
-};
-
-
-Peer.prototype.sendScreen = function(){
-    this.sendMedia( StreamManager.MEDIA_SCREEN );
-};
-
-
 Peer.prototype.addStream = function( stream ){
     this.pc.addStream( stream );
 };
@@ -284,7 +250,13 @@ StreamManager.prototype.getLocalStream = function( type, callback ){
     else if ( StreamManager.MEDIA_AUDIO_VIDEO === type )
             this.getUserMedia( {video: true, audio: true}, saveStream );
     else if ( StreamManager.MEDIA_SCREEN === type )
-        this.getUserMedia( {video: true, audio: true, mediaSource: 'screen'}, saveStream );
+        this.getUserMedia({
+            video: {
+//                mediaSource: 'screen',
+                mandatory: {chromeMediaSource: 'screen'}
+            },
+            audio: true
+        }, saveStream );
     else
         throw new TypeError( 'Unknown media type: "' + type + '"' );
 

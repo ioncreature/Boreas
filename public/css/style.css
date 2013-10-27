@@ -14,6 +14,7 @@ body {
 }
 
 #wrap {
+    position: relative;
     min-height: 100%;
     height: auto !important;
     height: 100%;
@@ -23,6 +24,13 @@ body {
 
 #header {
     height: 100px;
+}
+
+#footer {
+    position: relative;
+    height: 60px;
+    background-color: rgba(30, 30, 30, 0.3);
+    color: #d0d0d0;
 }
 
 #wrap .row.container {
@@ -52,12 +60,6 @@ body {
     border-radius: 5px;
 }
 
-#footer {
-    height: 60px;
-    background-color: rgba(30, 30, 30, 0.3);
-    color: #d0d0d0;
-}
-
 #footer .container {
     line-height: 60px;
 }
@@ -68,37 +70,6 @@ body {
     min-height: 300px;
     height: 100%;
     width: 100%;
-}
-
-#buttons {
-    display: none;
-}
-
-#joinRoomForm {
-    display: none;
-}
-
-#roomName {
-    background-color: rgba(255, 255, 255, 0.8);
-}
-
-.has-error #roomName {
-    background-color: rgba(255, 210, 220, 0.85);
-}
-
-
-button#join {
-    width: 35%;
-    margin-right: 15px;
-}
-
-button#rejectJoin {
-    width: 35%;
-}
-
-
-.centered {
-    text-align: center;
 }
 
 #remote-video {
@@ -133,6 +104,37 @@ button#rejectJoin {
     border: 0;
     width: 100%;
     border-radius: 0;
+}
+
+#buttons {
+    display: none;
+}
+
+#joinRoomForm {
+    display: none;
+}
+
+#roomName {
+    background-color: rgba(255, 255, 255, 0.8);
+}
+
+.has-error #roomName {
+    background-color: rgba(255, 210, 220, 0.85);
+}
+
+
+button#join {
+    width: 35%;
+    margin-right: 15px;
+}
+
+button#rejectJoin {
+    width: 35%;
+}
+
+
+.centered {
+    text-align: center;
 }
 
 .fat-border {
