@@ -6,6 +6,7 @@
 
 /**
  * @param {Object} options
+ * @inherits EventEmitter
  * @constructor
  */
 function Room( options ){

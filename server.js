@@ -42,7 +42,7 @@ server.listen( config.port );
 
 
 app.get( '/', function( req, res ){
-    var socketUrl = config.protocol + '://' + config.host + ':' + config.port;
+    var socketUrl = config.protocol + '://' + config.host + ':' + config.externalPort;
     res.render( 'index', {
         socketUrl: socketUrl
     });
@@ -58,11 +58,11 @@ var rooms = {},
 io.sockets.on( 'connection', function( socket ){
     var peer;
 
-    socket.on( 'disconnect', function (){
+    socket.on( 'disconnect', function(){
         delete peers[peer.id];
     });
 
-    socket.on( 'initUser', function( data, cb ){
+    socket.on( 'initUser', function( data ){
         peer = new Peer( data.id, socket );
         peers[peer.id] = peer;
     });

@@ -7,7 +7,7 @@ exports.debug = true;
 
 exports.port = 1337;
 
-exports.externalPort = 80;
+exports.externalPort = 1337;
 
 exports.proxyUsed = false;
 
