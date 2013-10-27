@@ -35,7 +35,9 @@ app.use( config.debug ? express.logger('dev') : express.logger() );
 app.use( '/public', express.static('./public') );
 app.use( app.router );
 
-server.listen( config.port );
+server.listen( config.port, function(){
+    console.log( 'HTTP server is listening port ' + config.port );
+});
 
 
 // HTTP
