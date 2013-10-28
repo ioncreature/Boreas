@@ -11,4 +11,4 @@ exports.proxyUsed = true;
 
 exports.host = 'lety.in';
 
-exports.protocol = 'http';
+exports.protocol = 'https';
