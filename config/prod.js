@@ -5,7 +5,7 @@
 
 exports.port = 8081;
 
-exports.externalPort = 80;
+exports.externalPort = 443;
 
 exports.proxyUsed = true;
 
