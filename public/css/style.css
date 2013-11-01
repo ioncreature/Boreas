@@ -22,8 +22,8 @@ body {
     padding: 0 0 60px;
 }
 
-#header {
-    height: 100px;
+#forms {
+    padding-top: 150px;
 }
 
 #footer {
@@ -140,4 +140,18 @@ button#rejectJoin {
 .fat-border {
     border: 5px solid rgba(0, 0, 0, .4);
     border-radius: 4px;
+}
+
+#mediaType {
+    position: absolute;
+    top: 30px;
+    left: 30px;
+    z-index: 10;
+    width: 60px;
+    text-align:  center;
+    padding: 6px;
+}
+
+#mediaType > li {
+    padding: 3px;
 }

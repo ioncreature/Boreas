@@ -5,8 +5,9 @@
 html
     head
         title Video Chat
-        meta(name="viewport", content="width=device-width, initial-scale=1")
-        link(href='https://fonts.googleapis.com/css?family=Droid+Sans:400,700', rel='stylesheet', type='text/css')
+        meta(name='viewport', content='width=device-width, initial-scale=1')
+        link(rel='stylesheet', href='https://fonts.googleapis.com/css?family=Droid+Sans:400,700')
+        link(rel='stylesheet', href='//netdna.bootstrapcdn.com/font-awesome/4.0.1/css/font-awesome.css')
         link(rel='stylesheet', href='public/css/bootstrap.css')
         link(rel='stylesheet', href='public/css/style.css')
         script(src='public/js/jquery.min.js')
@@ -20,8 +21,17 @@ html
                 audio#remote-audio(autoplay)
                 video#remote-video(autoplay)
                 video#local-video.fat-border(autoplay)
-            #header
-            .row.container
+            #mediaType.dark-box.btn-group-vertical(data-toggle='buttons')
+                label.btn.btn-success(alt='Audio Only')
+                    i.fa.fa-lg.fa-microphone
+                    input(type="radio", name="media", value='audio', id="mediaAudio")
+                label.btn.btn-success(alt='Video & Audio').active
+                    i.fa.fa-lg.fa-video-camera
+                    input(type="radio", name="media", value='audio video', id="mediaAudioVideo", checked)
+                label.btn.btn-success(alt='Screen')
+                    i.fa.fa-lg.fa-desktop
+                    input(type="radio", name="media", value='screen', id="mediaScreen")
+            #forms.row.container
                 .col-sm-3
                 .col-sm-6
                     #buttons.dark-box.form-container
@@ -38,92 +48,10 @@ html
             .container ©
                 a(href='https://github.com/ioncreature', target='_blank') Alexander Marenin
         script.
-            $( function(){
-                var buttonsContainer = $( '#buttons' ),
-                    videoContainer = $( '#video' ),
-                    joinRoomForm = $( '#joinRoomForm' ),
-                    buttonJoin = $( '#join' ),
-                    roomName = $( '#roomName' ),
-                    roomInfoName = $( '#roomInfoName' ),
-                    localStreamShowed = false;
-
-                var remoteVideo = document.getElementById('remote-video'),
-                    localVideo = document.getElementById('local-video'),
-                    remoteAudio = document.getElementById('remote-audio');
-
-                buttonsContainer.fadeIn();
-
-                var room = new Room({
-                    socketUrl: '#{socketUrl}',
-                    mediaType: 'audio video',
-                    autoConnect: true,
-                    iceServers: [{url: 'stun:stun.l.google.com:19302'}]
-                });
-
-                room.on( 'connected', function(){
-                    console.log( 'connected' );
-                    // return;
-                    room.streamManager.getLocalStream( StreamManager.MEDIA_VIDEO, function( error, stream ){
-                        if ( error )
-                            alert( 'Error happened when tried to catch local media stream' );
-                        else
-                            room.streamManager.attachStream( stream, localVideo );
-                    });
-                });
-
-                room.on( 'remoteStream', function( data ){
-                    console.log( 'remoteStream', data );
-                    var stream = data.stream;
-                    room.streamManager.attachStream( stream, remoteVideo );
-                });
-
-                room.on( 'peerConnected', function( peer ){
-                    console.log( 'peerConnected', peer.id );
-                });
-
-                $( '#newRoom' ).click( function(){
-                    buttonsContainer.fadeOut();
-                    videoContainer.fadeIn();
-                    room.createRoom( function( res ){
-                        if ( res.error )
-                            alert( error );
-                        else
-                            roomInfoName.val( room.name );
-                    });
-                });
-                $( '#openJoinRoomForm' ).click( function(){
-                    buttonsContainer.fadeOut( 300, function(){
-                        joinRoomForm.fadeIn();
-                    });
-                });
-
-                $( '#rejectJoin' ).click( function(){
-                    joinRoomForm.fadeOut( 200, function(){
-                        buttonsContainer.fadeIn();
-                        roomName.trigger( 'change' );
-                    });
-                });
-
-                buttonJoin.click( function(){
-                    var name = roomName.val().trim();
-                    if ( name )
-                        room.joinRoom({ name: name }, function( res ){
-                            if ( res.error )
-                                alert( res.error );
-                            else {
-                                joinRoomForm.fadeOut();
-                                videoContainer.fadeIn();
-                                roomInfoName.val( room.name );
-                            }
-                        });
-                    else
-                        roomName.closest( '.form-group' ).addClass( 'has-error' );
-                });
-
-                roomName.on( 'keydown keyup change', function(){
-                    roomName.closest( '.form-group' ).removeClass( 'has-error' );
-                });
-            });
+            var config = {
+                socketUrl: '#{socketUrl}'
+            };
         script(src='public/js/bootstrap.min.js')
         script(src='public/js/utils.js')
-        script(src='public/js/main.js')
+        script(src='public/js/room.js')
+        script(src='public/js/ui.js')
