@@ -13,9 +13,10 @@ function Room( options ){
     this.socketUrl = options.socketUrl;
     this.iceServers = options.iceServers;
     this.id = Date.now().toString();
-    this.mediaType = options.mediaType || StreamManager.MEDIA_VIDEO;
+    this.mediaType = options.mediaType || Room.MEDIA_VIDEO;
     this.streamManager = new StreamManager();
     this.peers = [];
+    this.connected = false;
 
     if ( options.autoConnect )
         this.connect();
@@ -23,12 +24,24 @@ function Room( options ){
 inherit( Room, EventEmitter );
 
 
+Room.MEDIA_AUDIO = 'audio';
+Room.MEDIA_VIDEO = 'video';
+Room.MEDIA_AUDIO_VIDEO = 'audio video';
+Room.MEDIA_SCREEN = 'screen';
+
+
 Room.prototype.connect = function(){
     var room = this;
     room.io = io.connect( room.socketUrl );
     room.io.on( 'connect', function(){
+        room.connected = true;
         room.io.emit( 'initUser', {id: room.id} );
         room.emit( 'connected' );
+    });
+
+    room.io.on( 'disconnect', function(){
+        room.connected = false;
+        room.emit( 'disconnected' );
     });
 
     room.io.on( 'offer', function( offer, fn ){
@@ -47,8 +60,13 @@ Room.prototype.connect = function(){
 
     room.streamManager.getLocalStream( room.mediaType, function( error, stream ){
         room.localStream = stream;
-        room.emit( 'localStream', stream );
+        room.emit( 'addLocalStream', stream );
     });
+};
+
+
+Room.prototype.isConnected = function(){
+    return !!this.connected;
 };
 
 
@@ -121,6 +139,10 @@ Room.prototype.addPeer = function( peerId ){
             room.emit( 'peerConnected', peer );
         });
 
+        peer.on( 'disconnected', function(){
+            room.emit( 'peerDisconnected', peer );
+        });
+
         peer.on( 'remoteStream', function( stream ){
             room.emit( 'remoteStream', {peer: peer, stream: stream} );
         });
@@ -145,6 +167,11 @@ Room.prototype.getPeerById = function( id ){
 };
 
 
+Room.prototype.attachStream = function( stream, node ){
+    this.streamManager.attachStream( stream, node );
+};
+
+
 /**
  * @constructor
  */
@@ -165,6 +192,10 @@ function Peer( id, options ){
         if ( peer.pc.signalingState === 'stable' ){
             peer.connected = true;
             peer.emit( 'connected' );
+        }
+        else if ( peer.pc.signalingState === 'closed' ){
+            peer.connected = false;
+            peer.emit( 'closed' );
         }
     };
     this.pc.onnegotiationneeded = function(){
@@ -230,27 +261,21 @@ function StreamManager(){
 }
 
 
-StreamManager.MEDIA_AUDIO = 'audio';
-StreamManager.MEDIA_VIDEO = 'video';
-StreamManager.MEDIA_AUDIO_VIDEO = 'audio video';
-StreamManager.MEDIA_SCREEN = 'screen';
-
-
 /**
- * @param {StreamManager.MEDIA_AUDIO|StreamManager.MEDIA_VIDEO|StreamManager.MEDIA_SCREEN} type
+ * @param {Room.MEDIA_AUDIO|Room.MEDIA_VIDEO|Room.MEDIA_SCREEN} type
  * @param {function(error?, stream?)} callback
  */
 StreamManager.prototype.getLocalStream = function( type, callback ){
     var manager = this;
     if ( this.localStreams[type] )
         callback( null, this.localStreams[type] );
-    else if ( StreamManager.MEDIA_AUDIO === type )
+    else if ( Room.MEDIA_AUDIO === type )
         this.getUserMedia( {video: false, audio: true}, saveStream );
-    else if ( StreamManager.MEDIA_VIDEO === type )
+    else if ( Room.MEDIA_VIDEO === type )
         this.getUserMedia( {video: true, audio: false}, saveStream );
-    else if ( StreamManager.MEDIA_AUDIO_VIDEO === type )
+    else if ( Room.MEDIA_AUDIO_VIDEO === type )
             this.getUserMedia( {video: true, audio: true}, saveStream );
-    else if ( StreamManager.MEDIA_SCREEN === type )
+    else if ( Room.MEDIA_SCREEN === type )
         this.getUserMedia({
             video: {
 //                mediaSource: 'screen',

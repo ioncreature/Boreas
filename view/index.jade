@@ -50,7 +50,9 @@ html
                 //script(src='https://seal.thawte.com/getthawteseal?host_name=lety.in&amp;size=M&amp;lang=en')
         script.
             var config = {
-                socketUrl: '#{socketUrl}'
+                socketUrl: '#{socketUrl}',
+                iceServers: [{url: 'stun:stun.l.google.com:19302'}],
+                mediaType: 'audio video'
             };
         script(src='public/js/bootstrap.min.js')
         script(src='public/js/utils.js')

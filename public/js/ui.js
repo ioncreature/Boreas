@@ -9,8 +9,7 @@ $( function(){
         joinRoomForm = $( '#joinRoomForm' ),
         buttonJoin = $( '#join' ),
         roomName = $( '#roomName' ),
-        roomInfoName = $( '#roomInfoName' ),
-        localStreamShowed = false;
+        roomInfoName = $( '#roomInfoName' );
 
     var remoteVideo = document.getElementById('remote-video'),
         localVideo = document.getElementById('local-video'),
@@ -20,18 +19,21 @@ $( function(){
 
     var room = new Room({
         socketUrl: config.socketUrl,
-        mediaType: 'audio video',
+        mediaType: config.mediaType,
         autoConnect: true,
-        iceServers: [{url: 'stun:stun.l.google.com:19302'}]
+        iceServers: config.iceServers
     });
 
     room.on( 'connected', function(){
-        room.streamManager.getLocalStream( StreamManager.MEDIA_VIDEO, function( error, stream ){
-            if ( error )
-                alert( 'Error happened when tried to catch local media stream' );
-            else
-                room.streamManager.attachStream( stream, localVideo );
-        });
+        console.log( 'Room connected' );
+    });
+
+    room.on( 'disconnected', function(){
+        console.log( 'Room disconnected' );
+    });
+
+    room.on( 'addLocalStream', function( stream ){
+        room.attachStream( stream, localVideo );
     });
 
     room.on( 'remoteStream', function( data ){
@@ -42,6 +44,10 @@ $( function(){
 
     room.on( 'peerConnected', function( peer ){
         console.log( 'peerConnected', peer.id );
+    });
+
+    room.on( 'peerDisconnected', function( peer ){
+        console.log( 'peerDisconnected' );
     });
 
     $( '#newRoom' ).click( function(){
