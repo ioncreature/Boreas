@@ -15,6 +15,7 @@ function Room( options ){
     this.id = Date.now().toString();
     this.mediaType = options.mediaType || Room.MEDIA_VIDEO;
     this.streamManager = new StreamManager();
+    this.localVideoEl = options.localVideoEl;
     this.peers = [];
     this.connected = false;
 
@@ -58,10 +59,7 @@ Room.prototype.connect = function(){
             peer.addIceCandidate( req.candidate );
     });
 
-    room.streamManager.getLocalStream( room.mediaType, function( error, stream ){
-        room.localStream = stream;
-        room.emit( 'addLocalStream', stream );
-    });
+    room.setLocalStreamType( room.mediaType );
 };
 
 
@@ -139,7 +137,7 @@ Room.prototype.addPeer = function( peerId ){
             room.emit( 'peerConnected', peer );
         });
 
-        peer.on( 'disconnected', function(){
+        peer.on( 'closed', function(){
             room.emit( 'peerDisconnected', peer );
         });
 
@@ -169,6 +167,27 @@ Room.prototype.getPeerById = function( id ){
 
 Room.prototype.attachStream = function( stream, node ){
     this.streamManager.attachStream( stream, node );
+};
+
+
+Room.prototype.setLocalStreamType = function( mediaType ){
+    var room = this;
+    room.streamManager.getLocalStream( mediaType, function( error, stream ){
+        if ( error )
+            room.emit( 'localStreamError', error );
+        else {
+            room.localStream = stream;
+            if ( room.localVideoEl )
+                room.attachStream( stream, room.localVideoEl );
+            room.emit( 'localStream', stream );
+            room.changePeersStream( stream );
+        }
+    });
+};
+
+
+Room.prototype.changePeersStream = function( stream ){
+
 };
 
 

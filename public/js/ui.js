@@ -11,6 +11,10 @@ $( function(){
         roomName = $( '#roomName' ),
         roomInfoName = $( '#roomInfoName' );
 
+    var mediaAudioEl = $( '#mediaAudio' ),
+        mediaAudioVideoEl = $( '#mediaAudioVideo' ),
+        mediaScreenEl = $( '#mediaScreen' );
+
     var remoteVideo = document.getElementById('remote-video'),
         localVideo = document.getElementById('local-video'),
         remoteAudio = document.getElementById('remote-audio');
@@ -21,7 +25,8 @@ $( function(){
         socketUrl: config.socketUrl,
         mediaType: config.mediaType,
         autoConnect: true,
-        iceServers: config.iceServers
+        iceServers: config.iceServers,
+        localVideoEl: localVideo
     });
 
     room.on( 'connected', function(){
@@ -32,14 +37,18 @@ $( function(){
         console.log( 'Room disconnected' );
     });
 
-    room.on( 'addLocalStream', function( stream ){
-        room.attachStream( stream, localVideo );
+    room.on( 'localStream', function( stream ){
+        console.log( 'localStream', stream );
+    });
+
+    room.on( 'localStreamError', function( error ){
+        console.error( 'Error with local stream: ' + error.name );
     });
 
     room.on( 'remoteStream', function( data ){
         console.log( 'remoteStream', data );
         var stream = data.stream;
-        room.streamManager.attachStream( stream, remoteVideo );
+        room.attachStream( stream, remoteVideo );
     });
 
     room.on( 'peerConnected', function( peer ){
@@ -92,4 +101,13 @@ $( function(){
     roomName.on( 'keydown keyup change', function(){
         roomName.closest( '.form-group' ).removeClass( 'has-error' );
     });
+
+    mediaAudioVideoEl.change( mediaRadioChange );
+    mediaAudioEl.change( mediaRadioChange );
+    mediaScreenEl.change( mediaRadioChange );
+
+    function mediaRadioChange(){
+        var mediaType = $( this ).val();
+        room.setLocalStreamType( mediaType );
+    }
 });
