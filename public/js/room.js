@@ -165,7 +165,7 @@ Room.prototype.getPeerById = function( id ){
 };
 
 
-Room.prototype.attachStream = function( stream, node ){
+Room.prototype.attachStream = function( stream, node, volume ){
     this.streamManager.attachStream( stream, node );
 };
 
@@ -177,7 +177,7 @@ Room.prototype.setLocalStreamType = function( mediaType ){
             room.emit( 'localStreamError', error );
         else {
             room.localStream = stream;
-            if ( room.localVideoEl )
+            if ( room.localVideoEl && mediaType !== Room.MEDIA_AUDIO )
                 room.attachStream( stream, room.localVideoEl );
             room.emit( 'localStream', stream );
             room.changePeersStream( stream );
