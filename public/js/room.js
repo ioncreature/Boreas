@@ -187,12 +187,15 @@ Room.prototype.setLocalStreamType = function( mediaType ){
 
 
 Room.prototype.changePeersStream = function( stream ){
-
+    this.peers.forEach( function( peer ){
+        peer.changeStream( stream );
+    });
 };
 
 
 /**
  * @constructor
+ * @extends EventEmitter
  */
 function Peer( id, options ){
     var peer = this;
@@ -263,7 +266,15 @@ Peer.prototype.addIceCandidate = function( candidate ){
 
 
 Peer.prototype.addStream = function( stream ){
+    this.localStream = stream;
     this.pc.addStream( stream );
+};
+
+
+Peer.prototype.changeStream = function( stream ){
+    var oldStream = this.localStream;
+    this.pc.removeStream( oldStream );
+    this.connect( stream );
 };
 
 
