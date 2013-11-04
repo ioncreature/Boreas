@@ -42,7 +42,9 @@ $( function(){
     });
 
     room.on( 'localStreamError', function( error ){
-        console.error( 'Error with local stream: ' + error.name );
+        var message = 'Error with local stream: ' + error.name;
+        console.error( message );
+        alert( message );
     });
 
     room.on( 'remoteStream', function( data ){
