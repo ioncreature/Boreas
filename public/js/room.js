@@ -305,14 +305,16 @@ StreamManager.prototype.getLocalStream = function( type, callback ){
         this.getUserMedia( {video: true, audio: false}, saveStream );
     else if ( Room.MEDIA_AUDIO_VIDEO === type )
             this.getUserMedia( {video: true, audio: true}, saveStream );
-    else if ( Room.MEDIA_SCREEN === type )
+    else if ( Room.MEDIA_SCREEN === type ){
+        removeStream( Room.MEDIA_AUDIO_VIDEO );
+        removeStream( Room.MEDIA_VIDEO );
         this.getUserMedia({
             video: {
-//                mediaSource: 'screen',
                 mandatory: {chromeMediaSource: 'screen'}
             },
             audio: true
         }, saveStream );
+    }
     else
         throw new TypeError( 'Unknown media type: "' + type + '"' );
 
@@ -320,6 +322,13 @@ StreamManager.prototype.getLocalStream = function( type, callback ){
         if ( !error )
             manager.localStreams[type] = stream;
         callback( error, stream );
+    }
+
+    function removeStream( type ){
+        var stream = manager.localStreams[type];
+        delete manager.localStreams[type];
+        if ( stream )
+            stream.stop();
     }
 };
 
