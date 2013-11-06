@@ -62,7 +62,11 @@ io.sockets.on( 'connection', function( socket ){
 
     socket.on( 'disconnect', function(){
         var room = peer.getRoom();
-        room.removePeer( peer );
+        if ( room ){
+            room.removePeer( peer );
+            if ( room.isEmpty() )
+                delete rooms[room.name];
+        }
         delete peers[peer.id];
     });
 
