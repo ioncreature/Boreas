@@ -177,7 +177,7 @@ Room.prototype.setLocalStreamType = function( mediaType ){
             room.emit( 'localStreamError', error );
         else {
             room.localStream = stream;
-            if ( room.localVideoEl && mediaType !== Room.MEDIA_AUDIO )
+            if ( room.localVideoEl )
                 room.attachStream( stream, room.localVideoEl );
             room.emit( 'localStream', stream );
             room.changePeersStream( stream );

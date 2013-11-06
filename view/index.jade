@@ -17,10 +17,9 @@ html
             #video
                 #roomInfo.form-group.fat-border
                     input#roomInfoName.input-lg(type="text")
-                audio#remote-audio(autoplay)
                 video#remote-video(autoplay)
-                #remote-videos
-                    video#local-video.fat-border(autoplay, muted)
+                video#local-video.fat-border(autoplay, muted)
+                #remote-videos.fill-container
             #mediaType.dark-box.btn-group-vertical(data-toggle='buttons')
                 label.btn.btn-success(alt='Audio Only')
                     i.fa.fa-lg.fa-microphone

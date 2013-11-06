@@ -91,6 +91,44 @@ body {
     background-color: rgba(255, 255, 255, 0.3);
 }
 
+.fill-container {
+    position: absolute;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    margin: 0;
+    padding: 0;
+    z-index: 1;
+    text-align: center;
+}
+
+.fill-container > * {
+    display: inline-block;
+    margin: 0;
+    padding: 0;
+    transition: all 0.5s linear;
+}
+
+.fill-container.e1 > * {
+    width: 100%;
+    height: 100%;
+}
+
+.fill-container.e2 > * {
+    width: 49.5%;
+    height: 100%;
+    margin-left: 0.2%;
+}
+
+.fill-container.e3 > *,
+.fill-container.e4 > * {
+    width: 49.5%;
+    margin-left: 0.2%;
+    height: 49.5%;
+    margin-top: 0.2%;
+}
+
 #roomInfo {
     position: absolute;
     top: 140px;
