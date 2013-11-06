@@ -11,8 +11,7 @@ $( function(){
         roomName = $( '#roomName' ),
         roomInfoName = $( '#roomInfoName' );
 
-    var remoteVideo = document.getElementById('remote-video'),
-        localVideo = document.getElementById('local-video'),
+    var localVideo = document.getElementById('local-video'),
         remoteVideos = $( '#remote-videos' );
 
     buttonsContainer.fadeIn();
