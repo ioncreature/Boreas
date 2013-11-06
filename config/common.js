@@ -4,3 +4,5 @@
  */
  
 exports.indexHtmlPath = './website/index.html';
+
+exports.roomCapacity = 5;

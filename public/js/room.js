@@ -170,7 +170,7 @@ Room.prototype.removePeer = function( peer ){
     var i = this.peers.indexOf( peer );
     if ( i > -1 ){
         this.peers[i].destroy();
-        delete this.peers[i];
+        this.peers.splice( i, 1 );
     }
 };
 

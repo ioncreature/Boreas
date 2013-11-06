@@ -13,6 +13,25 @@ body {
     background: transparent url(../img/bg.jpg) center center no-repeat;
 }
 
+.tooltip {
+    color: #d0d0d0;
+}
+.tooltip.right {
+  margin-left: 7px;
+}
+.tooltip > .tooltip-inner {
+    background-color: rgba(0, 0, 0, 0.25);
+    font-size: 14px;
+}
+.tooltip.top .tooltip-arrow,
+.tooltip.top-left .tooltip-arrow,
+.tooltip.top-right .tooltip-arrow {
+    border-top-color: rgba(0, 0, 0, 0.25);
+}
+.tooltip.right .tooltip-arrow {
+    border-right-color: rgba(0, 0, 0, 0.25);
+}
+
 #wrap {
     position: relative;
     min-height: 100%;
@@ -179,6 +198,7 @@ button#rejectJoin {
     width: 60px;
     text-align:  center;
     padding: 6px;
+    border-radius: 5px;
 }
 
 #mediaType > li {

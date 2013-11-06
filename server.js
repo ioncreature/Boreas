@@ -61,6 +61,8 @@ io.sockets.on( 'connection', function( socket ){
     var peer;
 
     socket.on( 'disconnect', function(){
+        var room = peer.getRoom();
+        room.removePeer( peer );
         delete peers[peer.id];
     });
 
@@ -83,7 +85,7 @@ io.sockets.on( 'connection', function( socket ){
 
         var room = new Room( name, data.password || false, peer );
         rooms[name] = room;
-        peer.setRoomName( name );
+        peer.setRoom( room );
         cb( {name: room.name, peers: room.getPeerIds()} );
     });
 
@@ -97,6 +99,8 @@ io.sockets.on( 'connection', function( socket ){
             callback( {error: 'Unable to find room with such name'} );
         else if ( !room.isPasswordCorrect(data.password) )
             callback( {error: 'Wrong password'} );
+        else if ( room.isFull() )
+            callback( {error: 'Room is full'} );
         else {
             room.addPeer( peer );
             callback( {name: room.name, peers: room.getPeerIds()} );
@@ -142,8 +146,18 @@ Room.prototype.isPasswordCorrect = function( pass ){
 };
 
 
+Room.prototype.isFull = function(){
+    return this.peers.length >= config.roomCapacity;
+};
+
+
+Room.prototype.isEmpty = function(){
+    return this.peers.length === 0;
+};
+
+
 Room.prototype.addPeer = function( id ){
-    if ( this.peers.indexOf(id) === -1 )
+    if ( !this.isFull() && this.peers.indexOf(id) === -1 )
         this.peers.push( id );
 };
 
@@ -152,6 +166,13 @@ Room.prototype.getPeerIds = function(){
     return this.peers.map( function( peer ){
         return peer.id;
     });
+};
+
+
+Room.prototype.removePeer = function( peer ){
+    var i = this.peers.indexOf( peer.id );
+    if ( i > -1 )
+        this.peers.splice( i, 1 );
 };
 
 
@@ -164,6 +185,17 @@ function Peer( id, socket ){
 }
 
 
-Peer.prototype.setRoomName = function( name ){
-    this.roomName = name;
+Peer.prototype.setRoom = function( room ){
+    this.room = room;
+};
+
+
+Peer.prototype.getRoom = function(){
+    return this.room;
+};
+
+
+Peer.prototype.destroy = function(){
+    delete this.room;
+    delete this.socket;
 };

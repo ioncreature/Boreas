@@ -20,13 +20,13 @@ html
                 video#local-video.fat-border(autoplay, muted)
                 #remote-videos.fill-container
             #mediaType.dark-box.btn-group-vertical(data-toggle='buttons')
-                label.btn.btn-success(alt='Audio Only')
+                label.btn.btn-success(data-toggle='tooltip', data-placement='right', data-original-title='Audio Only')
                     i.fa.fa-lg.fa-microphone
                     input(type="radio", name="media", value='audio', id="mediaAudio")
-                label.btn.btn-success(alt='Video & Audio').active
+                label.btn.btn-success(data-toggle='tooltip', data-placement='right', data-original-title='Video & Audio').active
                     i.fa.fa-lg.fa-video-camera
                     input(type="radio", name="media", value='audio video', id="mediaAudioVideo", checked)
-                label.btn.btn-success(alt='Screen')
+                label.btn.btn-success(data-toggle='tooltip', data-placement='right', data-original-title='Screen')
                     i.fa.fa-lg.fa-desktop
                     input(type="radio", name="media", value='screen', id="mediaScreen")
             #forms.row.container
@@ -52,6 +52,10 @@ html
                 iceServers: [{url: 'stun:stun.l.google.com:19302'}],
                 mediaType: 'audio video'
             };
+            // init tooltips
+            $( function(){
+                $( '#mediaType > label' ).tooltip( {container: 'body'} );
+            });
         script(src='public/js/bootstrap.min.js')
         script(src='public/js/utils.js')
         script(src='public/js/room.js')

@@ -14,3 +14,5 @@ exports.proxyUsed = false;
 exports.host = '192.168.1.3';
 
 exports.protocol = 'http';
+
+exports.roomCapacity = 5;
