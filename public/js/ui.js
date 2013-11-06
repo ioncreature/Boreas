@@ -68,7 +68,7 @@ $( function(){
                 e.id = peer.id;
                 e.autoplay = true;
                 remoteVideos.append( e );
-                updateVideosContainerClass();
+                updateVideoContainerClass();
             }
             return e;
         }
@@ -80,11 +80,11 @@ $( function(){
         function removePeerEl( peer ){
             var e = getPeerEl( peer );
             if ( e )
-                e.parent.removeChild( e );
-            updateVideosContainerClass();
+                e.parentNode.removeChild( e );
+            updateVideoContainerClass();
         }
 
-        function updateVideosContainerClass(){
+        function updateVideoContainerClass(){
             var count = remoteVideos[0].children.length || 1;
             remoteVideos.removeClass( 'e1 e2 e3 e4 e5 e6' ).addClass( 'e' + count );
         }

@@ -96,15 +96,18 @@ EventEmitter.prototype.emit = function( eventName, eventData ){
 
 
 /**
- * @param {string} eventName
+ * @param {string?} eventName
  */
 EventEmitter.prototype.removeListeners = function( eventName ){
-    delete this._callbacks[eventName];
+    if ( !eventName )
+        this._callbacks = {};
+    else
+        delete this._callbacks[eventName];
 };
 
 
 /**
- * @param eventHandler
+ * @param {EventHandler} eventHandler
  */
 EventEmitter.prototype.removeListener = function( eventHandler ){
     var name = eventHandler.name,
@@ -112,11 +115,6 @@ EventEmitter.prototype.removeListener = function( eventHandler ){
 
     if ( index > -1 )
         delete this._callbacks[name][i];
-};
-
-
-EventEmitter.prototype.removeAllListeners = function( eventName ){
-    this._callbacks = [];
 };
 
 

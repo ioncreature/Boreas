@@ -137,8 +137,9 @@ Room.prototype.addPeer = function( peerId ){
             room.emit( 'peerConnected', peer );
         });
 
-        peer.on( 'closed', function(){
+        peer.on( 'disconnect', function(){
             room.emit( 'peerDisconnected', peer );
+            room.removePeer( peer );
         });
 
         peer.on( 'remoteStream', function( stream ){
@@ -162,6 +163,15 @@ Room.prototype.getPeerById = function( id ){
         if ( peers[i].id === id )
             return peers[i];
     return false;
+};
+
+
+Room.prototype.removePeer = function( peer ){
+    var i = this.peers.indexOf( peer );
+    if ( i > -1 ){
+        this.peers[i].destroy();
+        delete this.peers[i];
+    }
 };
 
 
@@ -215,14 +225,26 @@ function Peer( id, options ){
             peer.connected = true;
             peer.emit( 'connected' );
         }
-        else if ( peer.pc.signalingState === 'closed' ){
-            peer.connected = false;
-            peer.emit( 'closed' );
-        }
     };
     this.pc.onnegotiationneeded = function(){
         console.log( 'Negotiation Needed' );
     };
+    this.pc.oniceconnectionstatechange = function(){
+        console.log( 'iceConnectionState', peer.pc.iceConnectionState );
+        switch ( peer.pc.iceConnectionState ){
+            case 'new':
+            case 'checking':
+            case 'completed':
+            case 'connected':
+                break;
+            case 'failed':
+            case 'disconnected':
+            case 'closed':
+                peer.connected = false;
+                peer.emit( 'disconnect' );
+                break;
+        }
+    }
 }
 inherit( Peer, EventEmitter );
 Peer.PeerConnection = window.RTCPeerConnection || window.webkitRTCPeerConnection || window.mozRTCPeerConnection;
@@ -234,6 +256,12 @@ Peer.prototype.connect = function( stream ){
     this.getOffer( function( sdp, callback ){
         peer.emit( 'getOffer', {sdp: sdp, callback: callback} );
     });
+};
+
+
+Peer.prototype.destroy = function(){
+    this.removeListeners();
+    // TODO
 };
 
 
