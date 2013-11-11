@@ -16,7 +16,8 @@ var util = require( './util' ),
     http = require( 'http' ),
     express = require( 'express' ),
     config = util.getConfig( commander.config ),
-    socket = require( 'socket.io' );
+    socket = require( 'socket.io' ),
+    socketUrl = config.protocol + '://' + config.host + ':' + config.externalPort;
 
 config.port = commander.port || config.port;
 
@@ -44,10 +45,26 @@ server.listen( config.port, function(){
 
 
 app.get( '/', function( req, res ){
-    var socketUrl = config.protocol + '://' + config.host + ':' + config.externalPort;
     res.render( 'index', {
         socketUrl: socketUrl
     });
+});
+
+app.get( '/r/:id', function( req, res ){
+    var id = req.params.id,
+        room = rooms[id];
+    if ( room )
+        res.render( 'index', {
+            socketUrl: socketUrl,
+            roomName: room.name,
+            needAuth: room.isPublic(),
+            error: room.isFull() ? 'Room is full' : ''
+        });
+    else
+        res.render( 'index', {
+            socketUrl: socketUrl,
+            error: 'Room "' + id + '" doesn\'t exists'
+        });
 });
 
 
@@ -139,11 +156,14 @@ io.sockets.on( 'connection', function( socket ){
 function Room( name, password, ownerPeer ){
     this.name = name;
     this.password = password;
-    this.owner = ownerPeer;
     this.peers = [];
     this.addPeer( ownerPeer );
 }
 
+
+Room.prototype.isPublic = function(){
+    return !this.password;
+};
 
 Room.prototype.isPasswordCorrect = function( pass ){
     return !this.password || pass === this.password;

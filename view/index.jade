@@ -8,10 +8,10 @@ html
         meta(name='viewport', content='width=device-width, initial-scale=1')
         link(rel='stylesheet', href='https://fonts.googleapis.com/css?family=Droid+Sans:400,700')
         link(rel='stylesheet', href='//netdna.bootstrapcdn.com/font-awesome/4.0.1/css/font-awesome.css')
-        link(rel='stylesheet', href='public/css/bootstrap.css')
-        link(rel='stylesheet', href='public/css/style.css')
-        script(src='public/js/jquery.min.js')
-        script(src='public/js/socket.io.min.js')
+        link(rel='stylesheet', href='/public/css/bootstrap.css')
+        link(rel='stylesheet', href='/public/css/style.css')
+        script(src='/public/js/jquery.min.js')
+        script(src='/public/js/socket.io.min.js')
     body
         #wrap
             #video
@@ -26,6 +26,7 @@ html
                 label.btn.btn-success(data-toggle='tooltip', data-placement='right', data-original-title='Video & Audio').active
                     i.fa.fa-lg.fa-video-camera
                     input(type="radio", name="media", value='audio video', id="mediaAudioVideo", checked)
+            //
                 label.btn.btn-success(data-toggle='tooltip', data-placement='right', data-original-title='Screen')
                     i.fa.fa-lg.fa-desktop
                     input(type="radio", name="media", value='screen', id="mediaScreen")
@@ -50,13 +51,16 @@ html
             var config = {
                 socketUrl: '#{socketUrl}',
                 iceServers: [{url: 'stun:stun.l.google.com:19302'}],
-                mediaType: 'audio video'
+                mediaType: 'audio video',
+                roomName: '#{typeof roomName != 'undefined' ? roomName : ''}',
+                isPublic: #{typeof needAuth != 'undefined' ? !!needAuth : false}
             };
+
             // init tooltips
             $( function(){
                 $( '#mediaType > label' ).tooltip( {container: 'body'} );
             });
-        script(src='public/js/bootstrap.min.js')
-        script(src='public/js/utils.js')
-        script(src='public/js/room.js')
-        script(src='public/js/ui.js')
+        script(src='/public/js/bootstrap.min.js')
+        script(src='/public/js/utils.js')
+        script(src='/public/js/room.js')
+        script(src='/public/js/ui.js')
