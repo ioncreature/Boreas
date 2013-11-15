@@ -23,8 +23,12 @@ function inherit( ChildClass, BaseClass ){
             enumerable: false,
             value: function(){
                 // It doesn't work in strict mode
-                var name = arguments.callee.name;
-                if ( typeof BaseClass.prototype[name] === 'function' )
+                var callee = arguments.callee,
+                    name = callee.name;
+
+                if ( callee === ChildClass )
+                    return BaseClass.apply( this, arguments );
+                else if ( typeof BaseClass.prototype[name] === 'function' )
                     return BaseClass.prototype[name].apply( this, arguments );
                 else
                     throw new ReferenceError( 'Unknown method "'+ name +'"' );
