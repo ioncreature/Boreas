@@ -281,7 +281,10 @@ Peer.prototype.getOffer = function( callback ){
     this.pc.createOffer( function( offerSdp ){
         peer.pc.setLocalDescription( offerSdp, function(){
             callback( offerSdp, function( answer ){
-                peer.pc.setRemoteDescription( new RTCSessionDescription(answer.sdp) );
+                if ( answer.error )
+                    alert( error );
+                else
+                    peer.pc.setRemoteDescription( new RTCSessionDescription(answer.sdp) );
             });
         });
     });

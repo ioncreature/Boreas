@@ -11,7 +11,7 @@ exports.externalPort = 1337;
 
 exports.proxyUsed = false;
 
-exports.host = '192.168.1.3';
+exports.host = '192.168.1.5';
 
 exports.protocol = 'http';
 

@@ -84,12 +84,12 @@ io.sockets.on( 'connection', function( socket ){
             if ( room.isEmpty() )
                 delete rooms[room.name];
         }
-        delete peers[peer.id];
+        delete peers[peer.getId()];
     });
 
     socket.on( 'initUser', function( data ){
         peer = new Peer( data.id, socket );
-        peers[peer.id] = peer;
+        peers[peer.getId()] = peer;
     });
 
     socket.on( 'createRoom', function( data, cb ){
@@ -124,6 +124,7 @@ io.sockets.on( 'connection', function( socket ){
             callback( {error: 'Room is full'} );
         else {
             room.addPeer( peer );
+            peer.setRoom( room );
             callback( {name: room.name, peers: room.getPeerIds()} );
         }
     });
@@ -134,7 +135,7 @@ io.sockets.on( 'connection', function( socket ){
         if ( !remotePeer )
             callback( {error: 'There is no remote peer'} );
         else
-            remotePeer.socket.emit( 'offer', {id: peer.id, sdp: offer.sdp}, function( answer ){
+            remotePeer.socket.emit( 'offer', {id: peer.getId(), sdp: offer.sdp}, function( answer ){
                 if ( answer.reject )
                     callback( {reject: true} );
                 else
@@ -145,7 +146,7 @@ io.sockets.on( 'connection', function( socket ){
     socket.on( 'iceCandidate', function( data ){
         var remotePeer = peers[data.id];
         if ( remotePeer )
-            remotePeer.socket.emit( 'iceCandidate', {id: peer.id, candidate: data.candidate} );
+            remotePeer.socket.emit( 'iceCandidate', {id: peer.getId(), candidate: data.candidate} );
     });
 });
 
@@ -180,23 +181,23 @@ Room.prototype.isEmpty = function(){
 };
 
 
-Room.prototype.addPeer = function( id ){
+Room.prototype.addPeer = function( peer ){
+    var id = peer.getId();
     if ( !this.isFull() && this.peers.indexOf(id) === -1 )
         this.peers.push( id );
 };
 
 
-Room.prototype.getPeerIds = function(){
-    return this.peers.map( function( peer ){
-        return peer.id;
-    });
+Room.prototype.removePeer = function( peer ){
+    var id = peer.getId(),
+        i = this.peers.indexOf( id );
+    if ( i > -1 )
+        this.peers.splice( i, 1 );
 };
 
 
-Room.prototype.removePeer = function( peer ){
-    var i = this.peers.indexOf( peer.id );
-    if ( i > -1 )
-        this.peers.splice( i, 1 );
+Room.prototype.getPeerIds = function(){
+    return this.peers;
 };
 
 
@@ -207,6 +208,11 @@ function Peer( id, socket ){
     this.id = id;
     this.socket = socket;
 }
+
+
+Peer.prototype.getId = function(){
+    return this.id;
+};
 
 
 Peer.prototype.setRoom = function( room ){
