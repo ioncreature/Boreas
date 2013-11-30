@@ -206,7 +206,7 @@ function Peer( id, options ){
     this.id = id;
     this.iceServers = options.iceServers;
 
-    this.pc = new Peer.PeerConnection( {iceServers: this.iceServers} );
+    this.pc = new Peer.PeerConnection( {iceServers: this.iceServers}, {optional: [{RtpDataChannels: true}]} );
     this.pc.onicecandidate = function( event ){
         peer.emit( 'iceCandidate', event.candidate );
     };
@@ -238,7 +238,13 @@ function Peer( id, options ){
                 peer.emit( 'disconnect' );
                 break;
         }
-    }
+    };
+    this.pc.ondatachannel = function( e ){
+        peer.receiveChannel = e.channel;
+        peer.receiveChannel.onmessage = function( e ){
+            peer.emit( 'message', new Message(e.data) );
+        };
+    };
 }
 inherit( Peer, EventEmitter );
 Peer.PeerConnection = window.RTCPeerConnection || window.webkitRTCPeerConnection || window.mozRTCPeerConnection;
@@ -301,6 +307,25 @@ Peer.prototype.changeStream = function( stream ){
     this.pc.removeStream( oldStream );
     this.connect( stream );
 };
+
+
+/**
+ * @param {Object|string?} data
+ * @constructor
+ */
+function Message( data ){
+    if ( typeof data == 'string' )
+        try {
+            data = JSON.parse( data );
+        }
+        catch ( e ){
+            data = {};
+        }
+    this.date = data && data.date ? new Date( data.date ) : new Date();
+    this.text = data && data.text || '';
+    this.author = data && data.author || '';
+    this.private = data && !!data.private;
+}
 
 
 /**
