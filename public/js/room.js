@@ -17,7 +17,6 @@ function Room( options ){
     this.streamManager = new StreamManager();
     this.localVideoEl = options.localVideoEl;
     this.peers = [];
-    this.connected = false;
 
     if ( options.autoConnect )
         this.connect();
@@ -35,13 +34,11 @@ Room.prototype.connect = function(){
     var room = this;
     room.io = io.connect( room.socketUrl );
     room.io.on( 'connect', function(){
-        room.connected = true;
         room.io.emit( 'initUser', {id: room.id} );
-        room.emit( 'connected' );
+        room.emit( 'connected', {name: room.id} );
     });
 
     room.io.on( 'disconnect', function(){
-        room.connected = false;
         room.emit( 'disconnected' );
     });
 
@@ -60,11 +57,6 @@ Room.prototype.connect = function(){
     });
 
     room.setLocalStreamType( room.mediaType );
-};
-
-
-Room.prototype.isConnected = function(){
-    return !!this.connected;
 };
 
 
@@ -145,6 +137,8 @@ Room.prototype.addPeer = function( peerId ){
         peer.on( 'remoteStream', function( stream ){
             room.emit( 'remoteStream', {peer: peer, stream: stream} );
         });
+
+        peer.on( 'message', function( peer ){});
     }
     return peer;
 };

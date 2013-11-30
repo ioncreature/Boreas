@@ -5,6 +5,8 @@
 html
     head
         title Video Chat
+        meta(name='description' content='WebRTC Free video calls and screen sharing. Group video calls. Video conference')
+        meta(name='keywords' content='Video chat, video conference, screen sharing')
         meta(name='viewport', content='width=device-width, initial-scale=1')
         link(rel='stylesheet', href='https://fonts.googleapis.com/css?family=Droid+Sans:400,700')
         link(rel='stylesheet', href='//netdna.bootstrapcdn.com/font-awesome/4.0.1/css/font-awesome.css')
@@ -15,34 +17,36 @@ html
     body
         #wrap
             #video
-                #roomInfo.form-group.fat-border
-                    input#roomInfoName.input-lg(type="text")
+                #room-info.form-group.fat-border
+                    input#room-info-name.input-lg(type="text")
                 video#local-video.fat-border(autoplay, muted)
                 #remote-videos.fill-container
-            #mediaType.dark-box.btn-group-vertical(data-toggle='buttons')
+            #media-type.dark-box.btn-group-vertical(data-toggle='buttons')
                 label.btn.btn-success(data-toggle='tooltip', data-placement='right', data-original-title='Audio Only')
                     i.fa.fa-lg.fa-microphone
-                    input(type="radio", name="media", value='audio', id="mediaAudio")
+                    input#media-audio(type="radio", name="media", value='audio')
                 label.btn.btn-success(data-toggle='tooltip', data-placement='right', data-original-title='Video & Audio').active
                     i.fa.fa-lg.fa-video-camera
-                    input(type="radio", name="media", value='audio video', id="mediaAudioVideo", checked)
+                    input#media-audio-video(type="radio", name="media", value='audio video', checked)
             //
                 label.btn.btn-success(data-toggle='tooltip', data-placement='right', data-original-title='Screen')
                     i.fa.fa-lg.fa-desktop
-                    input(type="radio", name="media", value='screen', id="mediaScreen")
+                    input#media-screen(type="radio", name="media", value='screen')
+            #chat
+
             #forms.row.container
                 .col-sm-3
                 .col-sm-6
                     #buttons.dark-box.form-container
-                        button#newRoom.btn.btn-success.btn-lg.btn-block New Room
-                        button#openJoinRoomForm.btn.btn-success.btn-lg.btn-block Join Room
-                    #joinRoomForm.dark-box.form-container
+                        button#new-room.btn.btn-success.btn-lg.btn-block New Room
+                        button#open-join-room-form.btn.btn-success.btn-lg.btn-block Join Room
+                    #join-room-form.dark-box.form-container
                         .form-group
-                            label(for="roomName") Room Name
-                            input#roomName.form-control.input-lg(type="text", placeholder="Enter Room Name")
+                            label(for="room-name") Room Name
+                            input#room-name.form-control.input-lg(type="text", placeholder="Enter Room Name")
                         .centered
                             button#join.btn.btn-success.btn-lg Join
-                            button#rejectJoin.btn.btn-danger.btn-lg Cancel
+                            button#reject-join.btn.btn-danger.btn-lg Cancel
         #footer
             .container ©
                 a(href='https://github.com/ioncreature', target='_blank') Alexander Marenin
@@ -58,9 +62,34 @@ html
 
             // init tooltips
             $( function(){
-                $( '#mediaType > label' ).tooltip( {container: 'body'} );
+                $( '#media-type > label' ).tooltip( {container: 'body'} );
             });
         script(src='/public/js/bootstrap.min.js')
         script(src='/public/js/utils.js')
         script(src='/public/js/room.js')
         script(src='/public/js/ui.js')
+
+        if ( !isDebug )
+            // Yandex.Metrika counter
+            script.
+                (function (d, w, c){
+                    (w[c] = w[c] || []).push(function() {
+                        try {
+                            w.yaCounter23230297 = new Ya.Metrika({
+                                id:23230297,
+                                clickmap:true,
+                                trackLinks:true,
+                                accurateTrackBounce:true
+                            });
+                        } catch(e){}
+                    });
+                    var n = d.getElementsByTagName("script")[0],
+                        s = d.createElement("script"),
+                        f = function () { n.parentNode.insertBefore(s, n); };
+                    s.type = "text/javascript";
+                    s.async = true;
+                    s.src = (d.location.protocol == "https:" ? "https:" : "http:") + "//mc.yandex.ru/metrika/watch.js";
+                    if (w.opera == "[object Opera]") {
+                        d.addEventListener("DOMContentLoaded", f, false);
+                    } else f();
+                })(document, window, "yandex_metrika_callbacks");

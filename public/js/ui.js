@@ -6,15 +6,15 @@
 $( function(){
     var buttonsContainer = $( '#buttons' ),
         videoContainer = $( '#video' ),
-        joinRoomForm = $( '#joinRoomForm' ),
+        joinRoomForm = $( '#join-room-form' ),
         buttonJoin = $( '#join' ),
-        roomName = $( '#roomName' ),
-        roomInfoName = $( '#roomInfoName' );
+        roomName = $( '#room-name' ),
+        roomInfoName = $( '#room-info-name' );
 
     var localVideo = document.getElementById('local-video'),
         remoteVideos = $( '#remote-videos' );
 
-    buttonsContainer.fadeIn();
+    buttonsContainer.fadeIn( 600 );
 
     { // Video
         var room = new Room({
@@ -25,8 +25,8 @@ $( function(){
             localVideoEl: localVideo
         });
 
-        room.on( 'connected', function(){
-            console.log( 'Room connected' );
+        room.on( 'connected', function( name ){
+            console.log( 'Room connected', name );
         });
 
         room.on( 'disconnected', function(){
@@ -91,7 +91,7 @@ $( function(){
 
 
     { // Forms
-        $( '#newRoom' ).click( function(){
+        $( '#new-room' ).click( function(){
             buttonsContainer.fadeOut();
             videoContainer.fadeIn();
             room.createRoom( function( res ){
@@ -101,13 +101,13 @@ $( function(){
                     roomInfoName.val( room.name );
             });
         });
-        $( '#openJoinRoomForm' ).click( function(){
+        $( '#open-join-room-form' ).click( function(){
             buttonsContainer.fadeOut( 300, function(){
                 joinRoomForm.fadeIn();
             });
         });
 
-        $( '#rejectJoin' ).click( function(){
+        $( '#reject-join' ).click( function(){
             joinRoomForm.fadeOut( 200, function(){
                 buttonsContainer.fadeIn();
                 roomName.trigger( 'change' );
@@ -137,9 +137,9 @@ $( function(){
 
 
     { // Radio buttons
-        $( '#mediaAudio' ).change( mediaRadioChange );
-        $( '#mediaAudioVideo' ).change( mediaRadioChange );
-        $( '#mediaScreen' ).change( mediaRadioChange );
+        $( '#media-audio' ).change( mediaRadioChange );
+        $( '#media-audio-video' ).change( mediaRadioChange );
+        $( '#media-screen' ).change( mediaRadioChange );
 
         function mediaRadioChange(){
             var mediaType = $( this ).val();

@@ -30,10 +30,13 @@ app.set( 'trust proxy', config.proxyUsed );
 app.set( 'views', './view' );
 app.set( 'view engine', 'jade' );
 
+app.locals.isDebug = config.debug;
+
 app.use( express.bodyParser() );
 app.use( express.methodOverride() );
 app.use( config.debug ? express.logger('dev') : express.logger() );
 app.use( '/public', express.static('./public') );
+app.use( express.favicon('public/favicon.ico') );
 app.use( app.router );
 
 server.listen( config.port, function(){
@@ -142,7 +145,7 @@ io.sockets.on( 'connection', function( socket ){
                     callback( {sdp: answer.sdp} );
             });
     });
-
+0
     socket.on( 'iceCandidate', function( data ){
         var remotePeer = peers[data.id];
         if ( remotePeer )
@@ -165,6 +168,7 @@ function Room( name, password, ownerPeer ){
 Room.prototype.isPublic = function(){
     return !this.password;
 };
+
 
 Room.prototype.isPasswordCorrect = function( pass ){
     return !this.password || pass === this.password;
